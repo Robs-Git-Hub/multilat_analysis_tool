@@ -18,10 +18,11 @@ def run_tests():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     
     try:
-        # Run pytest with verbose output
+        # Run pytest with verbose output on all test files
         result = subprocess.run([
             sys.executable, "-m", "pytest", 
-            "test_main.py", 
+            "test_main.py",
+            "test_models.py",
             "-v", 
             "--tb=short",
             "--color=yes"
