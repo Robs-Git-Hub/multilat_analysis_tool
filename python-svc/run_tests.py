@@ -23,9 +23,11 @@ def run_tests():
             sys.executable, "-m", "pytest", 
             "test_main.py",
             "test_models.py",
+            "test_database.py",
             "-v", 
             "--tb=short",
-            "--color=yes"
+            "--color=yes",
+            "-s"  # Don't capture output so we can see print statements
         ], capture_output=False, text=True)
         
         if result.returncode == 0:
