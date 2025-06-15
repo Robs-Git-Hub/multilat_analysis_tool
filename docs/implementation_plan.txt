@@ -1,0 +1,49 @@
+
+# implementation_plan.txt
+
+## Phase 1 · Repo, CI & Supabase Setup
+
+```
+/docs/                          ← planning docs (.txt)
+/src/                           ← React + plotly.js application code
+    ├─ components/
+    ├─ graphs/                  ← JS/TS ternary plot modules
+    ├─ hooks/                   ← React Query hooks for Supabase data
+    ├─ utils/                   ← TypeScript data processing helpers
+    └─ pages/
+/supabase/                      ← Supabase migrations and config
+/legacy/                        ← ORIGINAL Dash app & helpers (read-only reference)
+```
+
+* Commit 0 → Push skeleton so Lovable auto‑initialises build.
+* Commit 1 → Connect to Supabase, run initial migrations.
+* Commit 2 → Add Dash source files into `/legacy/` for posterity.
+
+## Phase 2 · Data Layer & Business Logic
+
+* **Tech**: Supabase (PostgreSQL), TypeScript.
+* **Data Access**: Create custom React Query hooks (`useTernaryData`, `useKeywordSearch`) in `/src/hooks/` to fetch data directly from Supabase tables.
+* **Analytics Logic**: Port essential Python data processing logic (e.g., centroid & n‑gram maths) to pure TypeScript helper functions in `/src/utils/`. The front-end is now responsible for both data fetching and processing.
+
+## Phase 3 · Front‑end Integration & Charting
+
+* **Tech**: React, `react-plotly.js`, `shadcn/ui`.
+* **Charts**: The `/src/graphs/` components will consume data from React Query hooks and use `/src/utils/` helpers to generate Plotly figure objects on the client-side.
+* **UI**: Build out the tabbed interface as defined in `app_flow_pages_and_roles.txt`, ensuring Keyword Details opens in a new tab while Bloc Analytics maintains its state.
+
+## Phase 4 · Content, Auth & Admin
+
+* **Pages**: Build out static pages: Entry Hub, About, How-To.
+* **Authentication**: Implement login flow using **Supabase Auth**.
+* **Admin**: Create an admin dashboard that uses Supabase Row Level Security (RLS) to manage users and data directly.
+
+## Phase 5 · QA & Deployment
+
+* **Testing**: Cross‑device testing (375 px → 1280 px).
+* **Accessibility**: Full audit (contrast ≥ 4.5 : 1, keyboard nav, ARIA labels).
+* **Deployment**: Deploy the React front-end via Lovable's Node runtime. Supabase handles the backend.
+
+## Team & Ownership
+
+* **You** – sole human maintainer.
+* **Lovable** – automated coding assistant guided by these `/docs/*.txt` files.

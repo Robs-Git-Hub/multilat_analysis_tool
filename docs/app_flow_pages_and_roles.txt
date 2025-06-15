@@ -1,4 +1,5 @@
-# app‑flow‑pages‑and‑roles.txt
+
+# app_flow_pages_and_roles.txt
 
 ## Routes & Pages
 
@@ -11,12 +12,12 @@
 | `/session/:id/insights` | SessionInsightsPage | All       | One‑page brief; Word export                                 |
 | `/about`                | AboutPage           | Public    | Background & methodology                                    |
 | `/how-to`               | HowToPage           | Public    | Quick GIF tour                                              |
-| `/admin`                | AdminDashboard      | **Admin** | User list, DB upload                                        |
-| `/login`                | AuthPage            | Public    | Username + password                                         |
+| `/admin`                | AdminDashboard      | **Admin** | User list, data management (via Supabase)                   |
+| `/login`                | AuthPage            | Public    | Supabase Auth                                               |
 
 Keyword Details opens in a **new tab** for side‑by‑side comparison. Bloc Analytics keeps URL state so chart reloads identically when you return.
 
 ## Roles & Rights
 
 * **Diplomat** – read‑only analytics & exports.
-* **Admin** – diplomat rights **plus** data upload, rebuild, user management.
+* **Admin** – diplomat rights **plus** user management and data administration (via Supabase RLS).
