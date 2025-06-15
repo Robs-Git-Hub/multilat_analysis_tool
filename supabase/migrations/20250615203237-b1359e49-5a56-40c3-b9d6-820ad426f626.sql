@@ -681,3 +681,4 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO anon, ser
 
 -- Note: RLS is not enabled by default. This can be configured in the Supabase dashboard
 -- after migration if needed.
+
