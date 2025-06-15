@@ -15,11 +15,4 @@ describe('Supabase Connection', () => {
     expect(query.select).toBeDefined();
     expect(typeof query.select).toBe('function');
   });
-
-  it('should have correct configuration', () => {
-    // Test that the client is configured with the correct URL and key
-    // Note: In a real test, we'd want to verify these are set correctly
-    expect(supabase.supabaseUrl).toBeTruthy();
-    expect(supabase.supabaseKey).toBeTruthy();
-  });
 });

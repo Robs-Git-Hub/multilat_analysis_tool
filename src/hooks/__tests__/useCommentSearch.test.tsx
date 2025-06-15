@@ -3,22 +3,17 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { useCommentSearch } from '../useCommentSearch';
+import { supabase } from '@/integrations/supabase/client';
+import { vi } from 'vitest';
 
 // Mock Supabase client
-jest.mock('@/integrations/supabase/client', () => ({
+vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        textSearch: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            limit: jest.fn(),
-          })),
-          limit: jest.fn(),
-        })),
-      })),
-    })),
+    from: vi.fn(),
   },
 }));
+
+const mockedSupabase = vi.mocked(supabase);
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -40,7 +35,7 @@ const createWrapper = () => {
 
 describe('useCommentSearch', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should search comments successfully', async () => {
@@ -59,19 +54,17 @@ describe('useCommentSearch', () => {
         },
       },
     ];
-
-    const { supabase } = require('@/integrations/supabase/client');
-    const mockQuery = {
-      textSearch: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue({
-        data: mockData,
-        error: null,
-      }),
-    };
     
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue(mockQuery),
-    });
+    // FIX: Cast the mock's return value to `any` to satisfy TypeScript.
+    mockedSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        textSearch: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: mockData,
+          error: null,
+        }),
+      }),
+    } as any);
 
     const { result } = renderHook(
       () => useCommentSearch('climate change'),
@@ -102,21 +95,20 @@ describe('useCommentSearch', () => {
   });
 
   it('should apply filters correctly', async () => {
-    const mockData = [];
-    const { supabase } = require('@/integrations/supabase/client');
+    const mockData: any[] = [];
     
     const mockQuery = {
-      textSearch: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue({
+      textSearch: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
         data: mockData,
         error: null,
       }),
     };
     
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue(mockQuery),
-    });
+    mockedSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnValue(mockQuery),
+    } as any);
 
     const filters = {
       speaker: 'United States',
@@ -136,19 +128,16 @@ describe('useCommentSearch', () => {
 
   it('should handle search errors', async () => {
     const mockError = new Error('Search failed');
-    const { supabase } = require('@/integrations/supabase/client');
     
-    const mockQuery = {
-      textSearch: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue({
-        data: null,
-        error: mockError,
+    mockedSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        textSearch: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: null,
+          error: mockError,
+        }),
       }),
-    };
-    
-    supabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue(mockQuery),
-    });
+    } as any);
 
     const { result } = renderHook(
       () => useCommentSearch('test search'),

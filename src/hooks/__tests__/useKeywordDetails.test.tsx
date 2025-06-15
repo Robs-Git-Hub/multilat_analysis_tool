@@ -3,25 +3,17 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { useKeywordDetails } from '../useKeywordDetails';
+import { supabase } from '@/integrations/supabase/client';
+import { vi } from 'vitest';
 
 // Mock Supabase client
-jest.mock('@/integrations/supabase/client', () => ({
+vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(),
-          limit: jest.fn(),
-          in: jest.fn(),
-        })),
-        limit: jest.fn(() => ({
-          in: jest.fn(),
-        })),
-        in: jest.fn(),
-      })),
-    })),
+    from: vi.fn(),
   },
 }));
+
+const mockedSupabase = vi.mocked(supabase);
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -43,7 +35,7 @@ const createWrapper = () => {
 
 describe('useKeywordDetails', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should fetch keyword details successfully', async () => {
@@ -66,53 +58,48 @@ describe('useKeywordDetails', () => {
       { id: 2, speaker: 'European Union', speaker_type: 'Regional Group' },
     ];
 
-    const { supabase } = require('@/integrations/supabase/client');
-    
-    // Mock the sequence of calls
-    let callCount = 0;
-    supabase.from.mockImplementation((table: string) => {
-      callCount++;
-      
+    // FIX: Use `as any` to simplify mocking of the complex Supabase client chain.
+    mockedSupabase.from.mockImplementation((table: string) => {
       if (table === 'oewg_ngram_statistics') {
         return {
           select: () => ({
             eq: () => ({
-              single: jest.fn().mockResolvedValue({
+              single: vi.fn().mockResolvedValue({
                 data: mockNgramStats,
                 error: null,
               }),
             }),
           }),
-        };
+        } as any;
       }
       
       if (table === 'vw_ngram_sentence_unpivoted') {
         return {
           select: () => ({
             eq: () => ({
-              limit: jest.fn().mockResolvedValue({
+              limit: vi.fn().mockResolvedValue({
                 data: mockSentenceSamples,
                 error: null,
               }),
             }),
           }),
-        };
+        } as any;
       }
       
       if (table === 'intervention') {
         return {
           select: () => ({
-            in: jest.fn().mockResolvedValue({
+            in: vi.fn().mockResolvedValue({
               data: mockInterventions,
               error: null,
             }),
           }),
-        };
+        } as any;
       }
       
       return {
         select: () => ({ eq: () => ({ single: () => ({}) }) }),
-      };
+      } as any;
     });
 
     const { result } = renderHook(
@@ -138,30 +125,26 @@ describe('useKeywordDetails', () => {
     });
   });
 
-  it('should return null for empty keyword', async () => {
+  it('should return undefined for empty keyword', () => {
     const { result } = renderHook(
       () => useKeywordDetails(''),
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      expect(result.current.data).toBeUndefined();
-    });
+    expect(result.current.data).toBeUndefined();
   });
 
   it('should handle missing ngram statistics', async () => {
-    const { supabase } = require('@/integrations/supabase/client');
-    
-    supabase.from.mockReturnValue({
+    mockedSupabase.from.mockReturnValue({
       select: () => ({
         eq: () => ({
-          single: jest.fn().mockResolvedValue({
+          single: vi.fn().mockResolvedValue({
             data: null,
             error: { message: 'No rows found' },
           }),
         }),
       }),
-    });
+    } as any);
 
     const { result } = renderHook(
       () => useKeywordDetails('nonexistent'),

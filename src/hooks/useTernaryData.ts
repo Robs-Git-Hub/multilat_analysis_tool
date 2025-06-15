@@ -1,9 +1,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
 
-type NgramStatistic = Tables<'oewg_ngram_statistics'>;
+// FIX: Removed unused 'NgramStatistic' type alias.
+// import type { Tables } from '@/integrations/supabase/types';
+// type NgramStatistic = Tables<'oewg_ngram_statistics'>;
 
 export interface TernaryDataPoint {
   ngram: string;
@@ -47,7 +48,22 @@ export const useTernaryData = () => {
       }
 
       console.log(`Successfully fetched ${data?.length || 0} ngram statistics`);
-      return data || [];
+      
+      const transformedData = (data || []).map(stat => ({
+        ngram: stat.ngram,
+        normalized_frequency_A: stat.normalized_frequency_A ?? 0,
+        normalized_frequency_BCDE: stat.normalized_frequency_BCDE ?? 0,
+        normalized_frequency_F: stat.normalized_frequency_F ?? 0,
+        normalized_frequency_G: stat.normalized_frequency_G ?? 0,
+        count_A: stat.count_A ?? 0,
+        count_BCDE: stat.count_BCDE ?? 0,
+        count_F: stat.count_F ?? 0,
+        count_G: stat.count_G ?? 0,
+        p_value: stat.p_value ?? undefined,
+        lor_polarization_score: stat.lor_polarization_score ?? undefined,
+      }));
+
+      return transformedData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

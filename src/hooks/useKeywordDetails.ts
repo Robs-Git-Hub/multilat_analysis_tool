@@ -67,8 +67,10 @@ export const useKeywordDetails = (keyword: string, enabled: boolean = true) => {
         throw sentenceError;
       }
 
-      // Get intervention details for the sentence samples
-      const interventionIds = sentenceSamples?.map(s => s.intervention_id) || [];
+      // FIX: Filter out any null intervention_ids before using them in the 'in' clause.
+      // The .filter() with a type guard ensures the resulting array is `number[]`.
+      const interventionIds = sentenceSamples?.map(s => s.intervention_id).filter((id): id is number => id !== null) || [];
+      
       const { data: interventions, error: interventionError } = await supabase
         .from('intervention')
         .select('id, speaker, speaker_type')
@@ -91,14 +93,17 @@ export const useKeywordDetails = (keyword: string, enabled: boolean = true) => {
       }>();
 
       sentenceSamples?.forEach(sample => {
-        const intervention = interventionMap.get(sample.intervention_id);
-        if (intervention?.speaker) {
-          const existing = speakerGroups.get(intervention.speaker) || {
-            speaker_type: intervention.speaker_type,
-            sentences: []
-          };
-          existing.sentences.push(sample.sentence_full);
-          speakerGroups.set(intervention.speaker, existing);
+        // FIX: Ensure both intervention_id and sentence_full are not null before processing.
+        if (sample.intervention_id && sample.sentence_full) {
+          const intervention = interventionMap.get(sample.intervention_id);
+          if (intervention?.speaker) {
+            const existing = speakerGroups.get(intervention.speaker) || {
+              speaker_type: intervention.speaker_type,
+              sentences: []
+            };
+            existing.sentences.push(sample.sentence_full);
+            speakerGroups.set(intervention.speaker, existing);
+          }
         }
       });
 
@@ -117,15 +122,16 @@ export const useKeywordDetails = (keyword: string, enabled: boolean = true) => {
 
       const result: KeywordDetails = {
         ngram: keyword,
-        total_usage_count: ngramStats.count_all_communities,
+        total_usage_count: ngramStats.count_all_communities ?? 0,
         speaker_breakdown,
         community_stats: {
-          A: ngramStats.count_A,
-          BCDE: ngramStats.count_BCDE,
-          F: ngramStats.count_F,
-          G: ngramStats.count_G,
+          A: ngramStats.count_A ?? 0,
+          BCDE: ngramStats.count_BCDE ?? 0,
+          F: ngramStats.count_F ?? 0,
+          G: ngramStats.count_G ?? 0,
         },
-        sample_sentences: sentenceSamples?.slice(0, 10).map(s => s.sentence_full) || [],
+        // FIX: Filter out any null sentences before creating the final array.
+        sample_sentences: sentenceSamples?.slice(0, 10).map(s => s.sentence_full).filter((s): s is string => s !== null) || [],
       };
 
       console.log(`Successfully fetched details for keyword: ${keyword}`);
