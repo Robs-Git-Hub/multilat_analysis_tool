@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,12 +62,39 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom design system colors from design-guidelines.txt
+				'multilat-primary': '#437e84',
+				'multilat-surface': '#f6f9f9',
+				'multilat-text': '#1a1d1d'
+			},
+			fontFamily: {
+				sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif'],
+				inter: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+			},
+			fontSize: {
+				'body': ['16px', '1.6']
+			},
+			lineHeight: {
+				'heading': '1.25'
+			},
+			fontWeight: {
+				'semibold': '600'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'2xl': '1rem'
+			},
+			boxShadow: {
+				'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+			},
+			maxWidth: {
+				'app': '1280px'
+			},
+			spacing: {
+				'base': '16px'
 			},
 			keyframes: {
 				'accordion-down': {
