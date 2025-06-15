@@ -1,4 +1,3 @@
-
 # migrate_to_supabase.py
 
 import os
@@ -115,7 +114,8 @@ def get_supabase_client() -> Client:
 def migrate_table(sqlite_conn, supabase_client, table_name):
     """
     A generic function to migrate data from a table, assuming table and column names match.
-    PKs are preserved from SQLite.
+    PKs are preserved from SQLite. This function is designed to be "all or nothing"
+    and will raise an exception on the first error, halting the migration.
     """
     logger.info(f"--- Starting migration for '{table_name}' table ---")
     cursor = sqlite_conn.cursor()
@@ -149,20 +149,21 @@ def migrate_table(sqlite_conn, supabase_client, table_name):
         for i in tqdm(range(0, len(items_to_insert), BATCH_SIZE), desc=f"Inserting into {table_name}"):
             batch = items_to_insert[i:i + BATCH_SIZE]
             try:
-                # The upsert with ignore_duplicates=True is safer if some data already exists,
-                # but since we cleared tables, simple insert is fine.
+                # Using insert directly. Any errors will be caught and will halt the script.
                 supabase_client.table(table_name).insert(batch).execute()
             except Exception as e:
-                logger.error(f"Error inserting batch for '{table_name}': {e}")
-                # You might want to break here or log problematic rows
-                # For now, we continue with other batches.
+                logger.error(f"FATAL: Error inserting batch for '{table_name}': {e}")
+                logger.error(f"Halting migration. Problematic batch starts with: {batch[0] if batch else 'N/A'}")
+                raise  # Re-raise the exception to halt the entire migration
 
         logger.info(f"✅ Successfully finished migration for '{table_name}'.")
 
     except sqlite3.OperationalError as e:
-        logger.error(f"Error accessing table '{table_name}' in SQLite: {e}. Skipping.")
+        logger.error(f"FATAL: Error accessing table '{table_name}' in SQLite: {e}. Halting migration.")
+        raise
     except Exception as e:
-        logger.error(f"An unexpected error occurred during migration of '{table_name}': {e}")
+        logger.error(f"FATAL: An unexpected error occurred during migration of '{table_name}': {e}")
+        raise
 
 # --- Main Execution ---
 
@@ -179,10 +180,7 @@ def main():
         return
 
     try:
-        # The schema migration script (run manually) already clears tables by dropping them.
-        # So, no need to clear them here.
-
-        logger.info("Starting data migration for all tables...")
+        logger.info("Starting data migration for all tables. The script will halt on the first error.")
         for table_name in tqdm(TABLES_TO_MIGRATE, desc="Total Migration Progress"):
             migrate_table(sqlite_conn, supabase_client, table_name)
 
@@ -190,7 +188,7 @@ def main():
         logger.info("Please remember to regenerate your Supabase types for the frontend if you haven't already.")
 
     except Exception as e:
-        logger.error(f"An unexpected error occurred during migration: {e}")
+        logger.error(f"MIGRATION HALTED due to an unrecoverable error: {e}")
     finally:
         if sqlite_conn:
             sqlite_conn.close()
