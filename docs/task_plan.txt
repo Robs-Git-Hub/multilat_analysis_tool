@@ -1,0 +1,179 @@
+
+# Multilat Analysis Tool - Development Task List
+
+## PHASE 1: Repository & Continuous Integration Setup
+
+### Task 1.1: Project Structure Setup
+**Goal:** Establish the folder structure as defined in `implementation_plan.txt`.
+
+- [ ] Create `/supabase/` directory for migrations and config.
+- [ ] Create `/legacy/` directory for reference Dash code.
+- [ ] Create `/src/components/` directory.
+- [ ] Create `/src/graphs/` directory for ternary plot modules.
+- [ ] Create `/src/hooks/` for React Query data hooks.
+- [ ] Create `/src/utils/` for TypeScript data processing helpers.
+- **Test:** Verify all directories exist and are accessible.
+
+### Task 1.2: Core Dependencies Installation
+**Goal:** Install required packages for the React frontend.
+
+- [ ] Verify `react-plotly.js` and `plotly.js` are available for ternary plots.
+- [ ] Verify `@tanstack/react-query` is available for data fetching.
+- [ ] Verify `shadcn/ui` components are available.
+- [ ] Add `@supabase/supabase-js` for Supabase client interaction.
+- **Test:** Run `npm install` successfully; no dependency conflicts.
+
+### Task 1.3: Design System Setup
+**Goal:** Implement design guidelines from `design_guidelines.txt`.
+
+- [ ] Configure Tailwind with custom colors (Primary: `#437e84`, Surface: `#f6f9f9`, Text: `#1a1d1d`).
+- [ ] Set up Inter font family.
+- [ ] Create base responsive layout utilities (375px–1280px).
+- **Test:** Verify custom colors and fonts render correctly.
+
+## PHASE 2: Data Layer & Business Logic
+
+### Task 2.1: Supabase Database Setup
+**Goal:** Connect to Supabase and set up the initial schema.
+
+- [ ] Run initial Supabase migrations to create tables (`oewg_ngram_statistics`, `speech_sentence`, etc.).
+- [ ] Configure the Supabase client in the React application (`/src/integrations/supabase/client.ts`).
+- **Test:** Successfully connect to the Supabase instance from the React app.
+
+### Task 2.2: Data Access with React Query
+**Goal:** Build custom hooks to fetch data directly from Supabase.
+
+- [ ] Create `useTernaryData` hook to fetch data from the `oewg_ngram_statistics` table.
+- [ ] Create `useCommentSearch` hook to perform full-text search on the `speech_sentence` table.
+- [ ] Create `useKeywordDetails` hook to fetch data aggregates for a specific term.
+- **Test:** Each hook returns correctly formatted data from Supabase.
+
+### Task 2.3: Client-Side Analytics Logic
+**Goal:** Implement centroid & n-gram mathematics in TypeScript.
+
+- [ ] Port ternary centroid calculations from `/legacy/` to TypeScript helpers in `/src/utils/`.
+- [ ] Create TypeScript helpers for any required n-gram statistics processing.
+- [ ] Create functions in `/src/graphs/` to generate Plotly figure objects on the client-side using fetched data.
+- **Test:** Generated Plotly figure objects render correctly in `react-plotly.js`.
+
+## PHASE 3: Frontend Integration & Charts
+
+### Task 3.1: Connect Components to Data Hooks
+**Goal:** Consume data from custom React Query hooks in UI components.
+
+- [ ] Connect `BlocAnalyticsPage` to the `useTernaryData` hook.
+- [ ] Connect `CommentFinderPage` to the `useCommentSearch` hook.
+- [ ] Connect `KeywordDetailsPage` to the `useKeywordDetails` hook.
+- [ ] Implement loading skeletons and error messages for all data-driven components.
+- **Test:** UI correctly displays loading, error, and success states based on hook status.
+
+### Task 3.2: Ternary Plot Components
+**Goal:** Create interactive ternary plot visualizations.
+
+- [ ] Install and configure `react-plotly.js`.
+- [ ] Create `TernaryPlot` component with responsive design.
+- [ ] Implement pinch-zoom for mobile (<480px).
+- [ ] Add URL state management for chart persistence.
+- **Test:** Ternary plots render correctly and maintain state on navigation.
+
+### Task 3.3: Page Components - Core Analytics
+**Goal:** Build the three main analytics pages.
+
+- [ ] Create `BlocAnalyticsPage` with two ternary tabs.
+- [ ] Create `CommentFinderPage` with search and filters.
+- [ ] Create `KeywordDetailsPage` with speaker table and CSV export.
+- [ ] Implement `SessionInsightsPage` with Word export capability.
+- **Test:** Each page functions independently and displays correct data.
+
+### Task 3.4: Navigation & Routing
+**Goal:** Implement React Router setup per `app_flow_pages_and_roles.txt`.
+
+- [ ] Configure React Router with all defined routes.
+- [ ] Create `EntryHub` page with tile menu navigation.
+- [ ] Implement "open in new tab" functionality for Keyword Details.
+- **Test:** All navigation works correctly; URL states persist where required.
+
+## PHASE 4: Content, Authentication & Admin
+
+### Task 4.1: Static Content Pages
+**Goal:** Create informational pages.
+
+- [ ] Build `AboutPage` with background & methodology.
+- [ ] Create `HowToPage` with a quick tour/guide.
+- **Test:** Content pages are accessible and mobile-friendly.
+
+### Task 4.2: Supabase Authentication System
+**Goal:** Implement a login flow using Supabase Auth.
+
+- [ ] Create `AuthPage` with a login/signup form.
+- [ ] Integrate Supabase Auth client for session management.
+- [ ] Add authentication context and protected routes.
+- [ ] Implement role-based access using Supabase RLS.
+- **Test:** Login/logout flow works correctly; roles are enforced.
+
+### Task 4.3: Admin Dashboard
+**Goal:** Build admin functionality leveraging Supabase.
+
+- [ ] Create `AdminDashboard` that reads user data from Supabase.
+- [ ] Protect the admin route based on the user's role defined in Supabase.
+- **Note:** Data management will be handled directly in the Supabase dashboard.
+- **Test:** Admin features work correctly and are restricted to admin users.
+
+### Task 4.4: Export Functionality
+**Goal:** Implement data export features.
+
+- [ ] Add CSV export for keyword details.
+- [ ] Implement Word document export for Session Insights.
+- **Test:** Exports generate correctly with proper formatting.
+
+## PHASE 5: QA & Deployment
+
+### Task 5.1: Responsive Design Testing
+**Goal:** Ensure cross-device compatibility.
+
+- [ ] Test layouts from 375px to 1280px viewport widths.
+- [ ] Verify ternary plots are properly responsive.
+- **Test:** All features work across specified device sizes.
+
+### Task 5.2: Accessibility Audit
+**Goal:** Meet accessibility standards.
+
+- [ ] Ensure color contrast ≥ 4.5:1 ratio.
+- [ ] Add proper ARIA labels to all interactive elements.
+- [ ] Implement keyboard navigation and focus indicators (teal 2px outline).
+- **Test:** Pass accessibility audit tools; keyboard navigation works seamlessly.
+
+### Task 5.3: Performance Optimization
+**Goal:** Optimize loading and rendering performance.
+
+- [ ] Implement code splitting for large components.
+- [ ] Optimize Plotly.js bundle size if necessary.
+- [ ] Add proper loading states and error boundaries.
+- **Test:** Page load times are acceptable; charts render smoothly.
+
+### Task 5.4: Production Deployment
+**Goal:** Deploy to Lovable hosting.
+
+- [ ] Ensure Supabase URL and anon key are correctly configured.
+- [ ] Test full production deployment.
+- [ ] Verify Supabase connectivity from the deployed app.
+- **Test:** The full application works in the production environment.
+
+## Testing Strategy for Each Phase
+
+### Unit Tests
+- React component rendering tests.
+- TypeScript utility function tests (e.g., for analytics logic).
+- Data transformation accuracy tests.
+- Supabase authentication flow tests.
+
+### Integration Tests
+- Supabase data fetching to component rendering.
+- Chart rendering with real data.
+- Export functionality end-to-end.
+- Authentication with protected routes.
+
+### User Acceptance Tests
+- Complete user workflows (search → view results → export).
+- Cross-browser compatibility.
+- Mobile user experience.
