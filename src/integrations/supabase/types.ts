@@ -11,68 +11,68 @@ export type Database = {
     Tables: {
       analysis_ai_labelled_topic_community_stats: {
         Row: {
-          count_a: number
+          count_A: number
           count_all_communities: number
-          count_bcde: number
-          count_f: number
-          count_g: number
+          count_BCDE: number
+          count_F: number
+          count_G: number
           dif_bcde_to_highest_polar: number | null
           dif_bcde_to_mid_polar_point: number | null
           focus_polarization_score: number | null
           lor_polarization_score: number | null
-          normalized_frequency_a: number
-          normalized_frequency_bcde: number
-          normalized_frequency_f: number
-          normalized_frequency_g: number
+          normalized_frequency_A: number
+          normalized_frequency_BCDE: number
+          normalized_frequency_F: number
+          normalized_frequency_G: number
           p_value_ag: number | null
-          relative_frequency_a: number
-          relative_frequency_bcde: number
-          relative_frequency_f: number
-          relative_frequency_g: number
+          relative_frequency_A: number
+          relative_frequency_BCDE: number
+          relative_frequency_F: number
+          relative_frequency_G: number
           topic_id: string
           topic_short_description: string | null
         }
         Insert: {
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
           topic_id: string
           topic_short_description?: string | null
         }
         Update: {
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
           topic_id?: string
           topic_short_description?: string | null
         }
@@ -96,70 +96,70 @@ export type Database = {
       analysis_bert_labelled_topic_community_stats: {
         Row: {
           bert_model_id: number
-          count_a: number
+          count_A: number
           count_all_communities: number
-          count_bcde: number
-          count_f: number
-          count_g: number
+          count_BCDE: number
+          count_F: number
+          count_G: number
           dif_bcde_to_highest_polar: number | null
           dif_bcde_to_mid_polar_point: number | null
           focus_polarization_score: number | null
           lor_polarization_score: number | null
-          normalized_frequency_a: number
-          normalized_frequency_bcde: number
-          normalized_frequency_f: number
-          normalized_frequency_g: number
+          normalized_frequency_A: number
+          normalized_frequency_BCDE: number
+          normalized_frequency_F: number
+          normalized_frequency_G: number
           p_value_ag: number | null
-          relative_frequency_a: number
-          relative_frequency_bcde: number
-          relative_frequency_f: number
-          relative_frequency_g: number
+          relative_frequency_A: number
+          relative_frequency_BCDE: number
+          relative_frequency_F: number
+          relative_frequency_G: number
           topic_id: number
           topic_short_description: string | null
         }
         Insert: {
           bert_model_id: number
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
           topic_id: number
           topic_short_description?: string | null
         }
         Update: {
           bert_model_id?: number
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
           topic_id?: number
           topic_short_description?: string | null
         }
@@ -238,70 +238,70 @@ export type Database = {
       }
       analysis_ngram_community_stats: {
         Row: {
-          count_a: number
+          count_A: number
           count_all_communities: number
-          count_bcde: number
-          count_f: number
-          count_g: number
+          count_BCDE: number
+          count_F: number
+          count_G: number
           dif_bcde_to_highest_polar: number | null
           dif_bcde_to_mid_polar_point: number | null
           focus_polarization_score: number | null
           lor_polarization_score: number | null
           ngram: string | null
           ngram_id: number
-          normalized_frequency_a: number
-          normalized_frequency_bcde: number
-          normalized_frequency_f: number
-          normalized_frequency_g: number
+          normalized_frequency_A: number
+          normalized_frequency_BCDE: number
+          normalized_frequency_F: number
+          normalized_frequency_G: number
           p_value_ag: number | null
-          relative_frequency_a: number
-          relative_frequency_bcde: number
-          relative_frequency_f: number
-          relative_frequency_g: number
+          relative_frequency_A: number
+          relative_frequency_BCDE: number
+          relative_frequency_F: number
+          relative_frequency_G: number
         }
         Insert: {
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
           ngram?: string | null
           ngram_id: number
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
         }
         Update: {
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           dif_bcde_to_highest_polar?: number | null
           dif_bcde_to_mid_polar_point?: number | null
           focus_polarization_score?: number | null
           lor_polarization_score?: number | null
           ngram?: string | null
           ngram_id?: number
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value_ag?: number | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
         }
         Relationships: [
           {
