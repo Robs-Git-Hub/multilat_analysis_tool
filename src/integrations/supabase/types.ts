@@ -585,7 +585,7 @@ export type Database = {
       country: {
         Row: {
           cpm_cluster_after_10_res_0_53: number | null
-          cpm_community_after_10_cpm_0_53: string | null
+          cpm_community_after_10_CPM_0_53: string | null
           id: string
           merge_name: string | null
           merge_name_with_pat_10: string | null
@@ -594,7 +594,7 @@ export type Database = {
         }
         Insert: {
           cpm_cluster_after_10_res_0_53?: number | null
-          cpm_community_after_10_cpm_0_53?: string | null
+          cpm_community_after_10_CPM_0_53?: string | null
           id: string
           merge_name?: string | null
           merge_name_with_pat_10?: string | null
@@ -603,7 +603,7 @@ export type Database = {
         }
         Update: {
           cpm_cluster_after_10_res_0_53?: number | null
-          cpm_community_after_10_cpm_0_53?: string | null
+          cpm_community_after_10_CPM_0_53?: string | null
           id?: string
           merge_name?: string | null
           merge_name_with_pat_10?: string | null
