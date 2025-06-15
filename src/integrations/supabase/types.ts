@@ -952,63 +952,63 @@ export type Database = {
       oewg_ngram_statistics: {
         Row: {
           bcde_raised_more: string | null
-          count_a: number
+          count_A: number
           count_all_communities: number
-          count_bcde: number
-          count_f: number
-          count_g: number
+          count_BCDE: number
+          count_F: number
+          count_G: number
           lor_polarization_score: number | null
           ngram: string
-          normalized_frequency_a: number
-          normalized_frequency_bcde: number
-          normalized_frequency_f: number
-          normalized_frequency_g: number
+          normalized_frequency_A: number
+          normalized_frequency_BCDE: number
+          normalized_frequency_F: number
+          normalized_frequency_G: number
           p_value: number | null
           p_value_ag_below_05: string | null
-          relative_frequency_a: number
-          relative_frequency_bcde: number
-          relative_frequency_f: number
-          relative_frequency_g: number
+          relative_frequency_A: number
+          relative_frequency_BCDE: number
+          relative_frequency_F: number
+          relative_frequency_G: number
         }
         Insert: {
           bcde_raised_more?: string | null
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           lor_polarization_score?: number | null
           ngram: string
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value?: number | null
           p_value_ag_below_05?: string | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
         }
         Update: {
           bcde_raised_more?: string | null
-          count_a?: number
+          count_A?: number
           count_all_communities?: number
-          count_bcde?: number
-          count_f?: number
-          count_g?: number
+          count_BCDE?: number
+          count_F?: number
+          count_G?: number
           lor_polarization_score?: number | null
           ngram?: string
-          normalized_frequency_a?: number
-          normalized_frequency_bcde?: number
-          normalized_frequency_f?: number
-          normalized_frequency_g?: number
+          normalized_frequency_A?: number
+          normalized_frequency_BCDE?: number
+          normalized_frequency_F?: number
+          normalized_frequency_G?: number
           p_value?: number | null
           p_value_ag_below_05?: string | null
-          relative_frequency_a?: number
-          relative_frequency_bcde?: number
-          relative_frequency_f?: number
-          relative_frequency_g?: number
+          relative_frequency_A?: number
+          relative_frequency_BCDE?: number
+          relative_frequency_F?: number
+          relative_frequency_G?: number
         }
         Relationships: []
       }
