@@ -1,0 +1,1 @@
+This is an FYI that the db has been moved to the top level data dir so it is available to the new app.

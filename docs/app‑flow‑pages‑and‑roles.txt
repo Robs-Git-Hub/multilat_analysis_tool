@@ -1,0 +1,22 @@
+# app‑flow‑pages‑and‑roles.txt
+
+## Routes & Pages
+
+| Path                    | Page                | Role      | Purpose                                                     |
+| ----------------------- | ------------------- | --------- | ----------------------------------------------------------- |
+| `/`                     | Entry Hub           | All       | Tile menu: Comment Finder, Bloc Analytics, Session Insights |
+| `/bloc-analytics`       | BlocAnalyticsPage   | All       | Two ternary tabs; link opens Keyword Details in new tab     |
+| `/keyword/:term`        | KeywordDetailsPage  | All       | Speaker table, filters, CSV export                          |
+| `/comment-finder`       | CommentFinderPage   | All       | Keyword & filter search                                     |
+| `/session/:id/insights` | SessionInsightsPage | All       | One‑page brief; Word export                                 |
+| `/about`                | AboutPage           | Public    | Background & methodology                                    |
+| `/how-to`               | HowToPage           | Public    | Quick GIF tour                                              |
+| `/admin`                | AdminDashboard      | **Admin** | User list, DB upload                                        |
+| `/login`                | AuthPage            | Public    | Username + password                                         |
+
+Keyword Details opens in a **new tab** for side‑by‑side comparison. Bloc Analytics keeps URL state so chart reloads identically when you return.
+
+## Roles & Rights
+
+* **Diplomat** – read‑only analytics & exports.
+* **Admin** – diplomat rights **plus** data upload, rebuild, user management.

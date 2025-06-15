@@ -1,0 +1,60 @@
+# masterplan.txt
+
+## 1 · Overview & Objectives
+
+Deliver three high‑impact analytics (Past‑Comment Finder, twin bloc ternaries, Session Insights brief) in a single web app so diplomats can draft **inter‑session strategy reports** faster and with stronger evidence.
+
+## 2 · Target Audience
+
+* Mid‑/senior diplomats who prepare UN cables and talking‑points.
+* Primarily desktop/laptop users; occasional tablet or phone reference.
+
+## 3 · Core MVP Features
+
+1. **Past‑Comment Finder** – ranked snippet search.
+2. **Bloc Analytics** – two interactive ternary plots.
+3. **Session Insights brief** – one‑page bloc snapshot.
+4. Username/password gate; Word export.
+
+## 4 · High‑Level Architecture
+
+| Layer                 | Tech                                   | Purpose                                                                  |
+| --------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
+| **Front‑end**         | React 18 + TypeScript + shadcn/ui      | UI & client routing (hosted by Lovable Node runtime)                     |
+| **Charts**            | `react‑plotly.js` + Plotly.js          | Renders figure JSON received from API                                    |
+| **API micro‑service** | FastAPI (Python 3.11)                  | Executes SQL & Python analytics; returns data & ready‑to‑draw trace JSON |
+| **Persistence**       | SQLite (`/data/oewg_analysis_dash.db`) | Read‑only; upgrade path to Postgres                                      |
+| **Reference**         | `/legacy/` folder                      | Contains original Dash app & helpers for future reference                |
+
+## 5 · Conceptual Data Model
+
+Tables reside in SQLite: `oewg_ngram_statistics`, `analysis_ngram_community_stats`, `intervention`, `speech_sentence`, plus speaker vectors for centroid maths.
+
+## 6 · UI & Design Principles
+
+Mobile‑first (≥ 375 px), primary teal **#437e84**, one decisive CTA per page, large canvas for ternary, Keyword Details opens in a new browser tab for side‑by‑side comparison.
+
+## 7 · Security & Privacy
+
+Open‑source transcripts only; demo credentials stored server‑side.
+
+## 8 · Development Phases
+
+* **Phase 1 – Repo & CI**  • bootstrap skeleton, push docs.
+* **Phase 2 – API Service**  • implement FastAPI endpoints.
+* **Phase 3 – Front‑end & Charts**  • consume API, render plots.
+* **Phase 4 – Content & Auth**  • static pages, login flow, admin panel.
+* **Phase 5 – QA & Deploy**  • accessibility, cross‑device, launch.
+
+## 9 · Risks & Mitigations
+
+| Risk                        | Mitigation                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| Dash integration complexity | Preserve Dash code in `/legacy/`; rebuild plots in JS using API‑fed data.          |
+| SQLite locking              | Keep DB read‑only; queue writes in future; migrate to Postgres when scale demands. |
+| Lovable ignoring docs       | Repo includes `/docs/*.txt`; CI fails if they are changed but not acknowledged.    |
+
+## 10 · Future Expansion
+
+Docx generation, Vercel AI SDK chat assistant, real‑time transcript feed, granular RBAC, Postgres.
+

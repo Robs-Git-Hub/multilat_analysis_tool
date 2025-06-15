@@ -1,0 +1,22 @@
+# design‑guidelines.txt
+
+## Palette
+
+| Token   | Hex         |
+| ------- | ----------- |
+| Primary | **#437e84** |
+| Surface | #f6f9f9     |
+| Text    | #1a1d1d     |
+
+## Typography & Layout
+
+* **Heading:** Inter SemiBold, 1.25× line‑height.
+* **Body:** Inter Regular 16 px / 1.6.
+* Mobile‑first grid: 16 px base; max‑width 1280 px; `rounded‑2xl`, `shadow‑md` cards.
+
+## Components & Behaviour
+
+* shadcn/ui primitives (`Card`, `Tabs`, `Drawer`, `DataTable`).
+* Primary buttons: filled teal; secondary: outlined teal.
+* `react‑plotly.js` set `responsive=true`; pinch‑zoom on <480 px.
+* ARIA labels + teal 2 px `focus-visible` outline.
