@@ -1,10 +1,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
 
-type SpeechSentence = Tables<'speech_sentence'>;
-type Intervention = Tables<'intervention'>;
+// FIX: Removed unused type aliases and their import.
+// import type { Tables } from '@/integrations/supabase/types';
+// type SpeechSentence = Tables<'speech_sentence'>;
+// type Intervention = Tables<'intervention'>;
 
 export interface CommentSearchResult {
   sentence_id: number;
@@ -93,6 +94,7 @@ export const useCommentSearch = (
       console.log(`Found ${results.length} matching sentences`);
       return results;
     },
+    placeholderData: [],
     enabled: enabled && searchTerm.trim().length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes

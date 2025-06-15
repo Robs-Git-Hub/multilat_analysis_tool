@@ -55,7 +55,6 @@ describe('useCommentSearch', () => {
       },
     ];
     
-    // FIX: Cast the mock's return value to `any` to satisfy TypeScript.
     mockedSupabase.from.mockReturnValue({
       select: vi.fn().mockReturnValue({
         textSearch: vi.fn().mockReturnThis(),
@@ -71,11 +70,13 @@ describe('useCommentSearch', () => {
       { wrapper: createWrapper() }
     );
 
+    // FIX: Wait for the data to be populated, not just for the success flag.
+    // This is a more robust way to test async data fetching and avoids race conditions.
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toHaveLength(1);
     });
 
-    expect(result.current.data).toHaveLength(1);
+    // Now that we know the data is correct, we can assert on its contents.
     expect(result.current.data?.[0]).toMatchObject({
       sentence_id: 1,
       sentence_full: 'This is a test sentence about climate change',
