@@ -16,6 +16,37 @@ pip install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+## Testing
+
+### Run Tests
+```bash
+# Install test dependencies (included in requirements.txt)
+pip install -r requirements.txt
+
+# Run all tests
+python -m pytest test_main.py -v
+
+# Or use the test runner script
+python run_tests.py
+```
+
+### Test Coverage
+The test suite covers:
+- ✅ Health check endpoint (`/`)
+- ✅ Ternary plot data endpoint (`/figure/ternary/{sessionId}`)
+- ✅ Search endpoint (`/search?q=<query>`)
+- ✅ Keyword details endpoint (`/keyword/{term}`)
+- ✅ Database connection handling
+- ✅ Error handling and edge cases
+- ✅ CORS configuration
+
+### Test Structure
+- `TestHealthCheck` - Tests the root health endpoint
+- `TestTernaryEndpoint` - Tests ternary plot data retrieval
+- `TestSearchEndpoint` - Tests comment search functionality
+- `TestKeywordEndpoint` - Tests keyword analysis
+- `TestDatabaseConnection` - Tests database connectivity
+
 ## API Endpoints
 
 ### Core Endpoints (Phase 2)
@@ -66,3 +97,5 @@ The service connects to the SQLite database at `/data/oewg_analysis_dash.db` in 
 - Database queries are placeholders and need to be updated based on actual schema
 - Error handling and logging included
 - Ready for integration with React frontend using react-query
+- Comprehensive test suite with mocked database connections
+- All endpoints tested for success, failure, and edge cases
