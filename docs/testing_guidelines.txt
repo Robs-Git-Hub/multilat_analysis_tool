@@ -1,0 +1,62 @@
+### **Project Testing Guidelines**
+
+Our tests are the living specification for our application's behavior. They are non-negotiable. Adherence to these principles is required to maintain a stable, predictable, and high-quality codebase.
+
+**1. Use Our Stack Exclusively.**
+
+*   This project uses Vite. Therefore, all tests **must** be written with **Vitest**.
+*   Do **not** install or use Jest, Mocha, or any other test runner. The friction of integrating them is not worth the cost.
+*   All test files **must** end in `.test.ts` or `.test.tsx`.
+
+**2. Test Behavior, Not Implementation.**
+
+A test must verify the public contract of a module, not its internal workings. This makes our tests resilient to refactoring.
+
+*   **DON'T** test private or protected properties.
+    ```typescript
+    // FRAGILE: This breaks if the library changes its internal structure.
+    expect(supabase.supabaseKey).toBeDefined();
+    ```
+*   **DO** test the observable, public behavior.
+    ```typescript
+    // ROBUST: This tests the public API we actually use.
+    expect(typeof supabase.from).toBe('function');
+    ```
+
+**3. Master Asynchronous Assertions.**
+
+Incorrectly testing async code leads to flaky, unreliable tests. We have two strict rules.
+
+*   **Rule A: Use `placeholderData` for Loading States in React Query.**
+    *   `placeholderData` provides a default value while keeping the query in a `pending` state, allowing tests to correctly follow the fetch lifecycle.
+    *   Do **not** use `initialData` unless you are intentionally seeding the cache with permanent, valid data. It prematurely marks the query as `success` and breaks tests that rely on a `pending` state.
+
+*   **Rule B: Assert on the Final State, Not Intermediate Flags.**
+    *   Waiting for flags like `isSuccess` creates race conditions. Always wait for the actual data or UI change you expect.
+    *   **DON'T** wait for an intermediate flag.
+        ```typescript
+        // FLAKY: The success flag can be true before the data has rendered.
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.data).toHaveLength(1); // This might fail.
+        ```
+    *   **DO** wait for the final, expected outcome.
+        ```typescript
+        // RELIABLE: The test only passes when the final data is correct.
+        await waitFor(() => expect(result.current.data).toHaveLength(1));
+        ```
+
+**4. Mock All External Dependencies.**
+
+Our tests must be fast, deterministic, and isolated from external services.
+
+*   Any interaction with an external service (e.g., the Supabase API) **must** be mocked using `vi.mock`.
+*   Your test should control all inputs and outputs of the module under test.
+
+**5. Maintain Zero-Tolerance for Errors and Warnings.**
+
+A clean slate is the standard.
+
+*   A pull request will not be merged if `npm test` fails.
+*   A pull request will not be merged if there are TypeScript errors.
+*   Resolve all linter warnings (yellow squiggles). Unused variables and imports **must** be removed.
+*   If your editor shows errors but the terminal passes, your first action is to restart the TS Server (`Ctrl/Cmd + Shift + P` -> `TypeScript: Restart TS Server`).
