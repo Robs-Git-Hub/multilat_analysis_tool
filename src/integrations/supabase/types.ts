@@ -9,7 +9,139 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      countries: {
+        Row: {
+          country_code: string | null
+          country_name: string
+          created_at: string | null
+          id: number
+          region: string | null
+          sub_region: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          country_name: string
+          created_at?: string | null
+          id?: number
+          region?: string | null
+          sub_region?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          country_name?: string
+          created_at?: string | null
+          id?: number
+          region?: string | null
+          sub_region?: string | null
+        }
+        Relationships: []
+      }
+      interventions: {
+        Row: {
+          country_id: number | null
+          created_at: string | null
+          id: number
+          intervention_text: string | null
+          session_id: string | null
+          speaker_name: string | null
+        }
+        Insert: {
+          country_id?: number | null
+          created_at?: string | null
+          id?: number
+          intervention_text?: string | null
+          session_id?: string | null
+          speaker_name?: string | null
+        }
+        Update: {
+          country_id?: number | null
+          created_at?: string | null
+          id?: number
+          intervention_text?: string | null
+          session_id?: string | null
+          speaker_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interventions_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ngram_statistics: {
+        Row: {
+          country_name: string | null
+          created_at: string | null
+          id: number
+          mention_count: number | null
+          ngram_term: string | null
+          session_id: string | null
+          x_coord: number | null
+          y_coord: number | null
+          z_coord: number | null
+        }
+        Insert: {
+          country_name?: string | null
+          created_at?: string | null
+          id?: number
+          mention_count?: number | null
+          ngram_term?: string | null
+          session_id?: string | null
+          x_coord?: number | null
+          y_coord?: number | null
+          z_coord?: number | null
+        }
+        Update: {
+          country_name?: string | null
+          created_at?: string | null
+          id?: number
+          mention_count?: number | null
+          ngram_term?: string | null
+          session_id?: string | null
+          x_coord?: number | null
+          y_coord?: number | null
+          z_coord?: number | null
+        }
+        Relationships: []
+      }
+      speech_sentences: {
+        Row: {
+          created_at: string | null
+          id: number
+          intervention_id: number | null
+          relevance_score: number | null
+          sentence_order: number | null
+          sentence_text: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          intervention_id?: number | null
+          relevance_score?: number | null
+          sentence_order?: number | null
+          sentence_text?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          intervention_id?: number | null
+          relevance_score?: number | null
+          sentence_order?: number | null
+          sentence_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "speech_sentences_intervention_id_fkey"
+            columns: ["intervention_id"]
+            isOneToOne: false
+            referencedRelation: "interventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
