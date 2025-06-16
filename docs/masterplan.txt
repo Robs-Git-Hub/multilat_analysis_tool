@@ -1,5 +1,7 @@
 # masterplan.txt
 
+version: 2.0
+
 ## 1 · Overview & Objectives
 
 Deliver three high‑impact analytics (Past‑Comment Finder, twin bloc ternaries, Session Insights brief) in a single web app so diplomats can draft **inter‑session strategy reports** faster and with stronger evidence.
@@ -18,17 +20,19 @@ Deliver three high‑impact analytics (Past‑Comment Finder, twin bloc ternarie
 
 ## 4 · High‑Level Architecture
 
-| Layer                 | Tech                                   | Purpose                                                                  |
-| --------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| **Front‑end**         | React 18 + TypeScript + shadcn/ui      | UI & client routing (hosted by Lovable Node runtime)                     |
-| **Charts**            | `react‑plotly.js` + Plotly.js          | Renders figure JSON received from API                                    |
-| **API micro‑service** | FastAPI (Python 3.11)                  | Executes SQL & Python analytics; returns data & ready‑to‑draw trace JSON |
-| **Persistence**       | SQLite (`/data/oewg_analysis_dash.db`) | Read‑only; upgrade path to Postgres                                      |
-| **Reference**         | `/legacy/` folder                      | Contains original Dash app & helpers for future reference                |
+| Layer | Tech | Purpose |
+| :--- | :--- | :--- |
+| **Front‑end** | React 18 + TypeScript + shadcn/ui | UI, client routing & state management (hosted by Lovable Node runtime) |
+| **Charts** | `react‑plotly.js` + Plotly.js | Renders interactive charts using client-side data |
+| **Business Logic** | TypeScript | Analytics logic (e.g., centroid math) is ported from legacy Python and runs in the browser, located in `/src/utils/` |
+| **Backend & DB** | Supabase (PostgreSQL) | Data persistence, authentication, and direct data access via API |
+| **Reference** | `/legacy/` folder | Contains original Dash app & helpers for reference during the porting process |
 
 ## 5 · Conceptual Data Model
 
-Tables reside in SQLite: `oewg_ngram_statistics`, `analysis_ngram_community_stats`, `intervention`, `speech_sentence`, plus speaker vectors for centroid maths.
+The initial Supabase schema was created via a **one-time migration script** (`/python-svc/migration/`) that moved data from the legacy SQLite database, preserving the original table structure (`oewg_ngram_statistics`, `speech_sentence`, etc.).
+
+From that point forward, **Supabase is the single source of truth for data**. TypeScript types are auto-generated from the Supabase schema, ensuring the front-end always matches the database structure. Data is fetched by the client using React Query hooks.
 
 ## 6 · UI & Design Principles
 
@@ -36,25 +40,24 @@ Mobile‑first (≥ 375 px), primary teal **#437e84**, one decisive CTA per 
 
 ## 7 · Security & Privacy
 
-Open‑source transcripts only; demo credentials stored server‑side.
+Open‑source transcripts only; authentication managed by Supabase Auth.
 
 ## 8 · Development Phases
 
-* **Phase 1 – Repo & CI**  • bootstrap skeleton, push docs.
-* **Phase 2 – API Service**  • implement FastAPI endpoints.
-* **Phase 3 – Front‑end & Charts**  • consume API, render plots.
-* **Phase 4 – Content & Auth**  • static pages, login flow, admin panel.
-* **Phase 5 – QA & Deploy**  • accessibility, cross‑device, launch.
+* **Phase 1 – Repo & CI** • bootstrap skeleton, push docs.
+* **Phase 2 – Data Layer & Business Logic** • **Migrate SQLite data to Supabase**, set up data hooks, **port Python analytics helpers to TypeScript**.
+* **Phase 3 – Front‑end & Charts** • consume hooks, build UI components, render plots.
+* **Phase 4 – Content & Auth** • static pages, Supabase login flow, admin panel.
+* **Phase 5 – QA & Deploy** • accessibility, cross‑device, launch.
 
 ## 9 · Risks & Mitigations
 
-| Risk                        | Mitigation                                                                         |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| Dash integration complexity | Preserve Dash code in `/legacy/`; rebuild plots in JS using API‑fed data.          |
-| SQLite locking              | Keep DB read‑only; queue writes in future; migrate to Postgres when scale demands. |
-| Lovable ignoring docs       | Repo includes `/docs/*.txt`; CI fails if they are changed but not acknowledged.    |
+| Risk | Mitigation |
+| :--- | :--- |
+| Legacy code complexity | Mitigated by preserving the original Dash app in `/legacy/` for reference only. Analytics logic is systematically **ported from Python to TypeScript**, not integrated directly, reducing complexity. |
+| Complex data queries | Utilize Supabase's PostgreSQL functions and React Query for efficient, client-side data fetching and caching. |
+| Lovable ignoring docs | Repo includes `/docs/*.txt`; CI fails if they are changed but not acknowledged. |
 
 ## 10 · Future Expansion
 
-Docx generation, Vercel AI SDK chat assistant, real‑time transcript feed, granular RBAC, Postgres.
-
+Docx generation, Vercel AI SDK chat assistant, real‑time transcript feed, granular RBAC.

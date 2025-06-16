@@ -8,14 +8,14 @@
    * `design-guidelines.txt` – colour, typography, component and accessibility rules.
    * `app-flow-pages-and-roles.txt` – routes, page duties, permissions.
 
-2. **Follow DRY and Single Source of Truth.**
+2. **Aggressively follow DRY and Single Source of Truth.**
    * Re‑use helpers; no duplicated logic or styles.
    * Data lives in `/data/oewg_analysis_dash.db`; analytics logic in `/python-svc/`; UI state derives from React hooks.
 
-3. **Folder conventions (see implementation-plan):**
-   `/src/` React & plotly.js  •  `/python-svc/` FastAPI  •  `/legacy/` archived Dash code.
+3. **Follow test driven development (TDD)**
+   * Consult testing_guidelines.txt for how to implement a TDD approach.
 
 4. **Workflow:**
    * Parse docs → build only what the current phase allows.
-   * Validate changes against **all four** docs; ask for clarification if conflicts arise.
+   * Validate changes against spec files docs; ask for clarification if conflicts arise.
    * Output clean, commented code adhering to Prettier/Black.

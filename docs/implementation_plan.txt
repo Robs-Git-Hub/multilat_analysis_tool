@@ -1,7 +1,10 @@
-
 # implementation_plan.txt
 
-## Phase 1 · Repo, CI & Supabase Setup
+version: 2.0
+
+## Phase 1 · Repository & Continuous Integration Setup
+
+**Goal:** Establish the foundational project structure, dependencies, and reference code.
 
 ```
 /docs/                          ← planning docs (.txt)
@@ -15,35 +18,59 @@
 /legacy/                        ← ORIGINAL Dash app & helpers (read-only reference)
 ```
 
-* Commit 0 → Push skeleton so Lovable auto‑initialises build.
-* Commit 1 → Connect to Supabase, run initial migrations.
-* Commit 2 → Add Dash source files into `/legacy/` for posterity.
+*   Create the repository skeleton and folder structure as defined above.
+*   Install core dependencies (`React`, `shadcn/ui`, `react-plotly.js`, etc.).
+*   Add the original Dash application source files into the `/legacy/` directory for reference.
 
-## Phase 2 · Data Layer & Business Logic
+## Phase 2 · Data Layer & Business Logic
 
-* **Tech**: Supabase (PostgreSQL), TypeScript.
-* **Data Access**: Create custom React Query hooks (`useTernaryData`, `useKeywordSearch`) in `/src/hooks/` to fetch data directly from Supabase tables.
-* **Analytics Logic**: Port essential Python data processing logic (e.g., centroid & n‑gram maths) to pure TypeScript helper functions in `/src/utils/`. The front-end is now responsible for both data fetching and processing.
+**Goal:** Migrate the data to Supabase and port the core analytics logic to TypeScript.
 
-## Phase 3 · Front‑end Integration & Charting
+*   **Tech**: Supabase (PostgreSQL), TypeScript.
+*   **Data Migration**: Connect to the Supabase instance. Execute a one-time migration of data from the legacy SQLite database to Supabase, establishing it as the single source of truth.
+*   **Data Access**: Create custom React Query hooks (`useTernaryData`, `useCommentSearch`) in `/src/hooks/` to fetch data directly from Supabase tables.
+*   **Analytics Logic**: Port essential Python data processing logic (e.g., centroid & n‑gram maths) from `/legacy/` to pure TypeScript helper functions in `/src/utils/`. The front-end becomes responsible for both data fetching and processing.
 
-* **Tech**: React, `react-plotly.js`, `shadcn/ui`.
-* **Charts**: The `/src/graphs/` components will consume data from React Query hooks and use `/src/utils/` helpers to generate Plotly figure objects on the client-side.
-* **UI**: Build out the tabbed interface as defined in `app_flow_pages_and_roles.txt`, ensuring Keyword Details opens in a new tab while Bloc Analytics maintains its state.
+## Phase 3 · Front‑end Integration & Charting
 
-## Phase 4 · Content, Auth & Admin
+**Goal:** Build the core UI pages and connect them to the data layer to render charts and results.
 
-* **Pages**: Build out static pages: Entry Hub, About, How-To.
-* **Authentication**: Implement login flow using **Supabase Auth**.
-* **Admin**: Create an admin dashboard that uses Supabase Row Level Security (RLS) to manage users and data directly.
+*   **Tech**: React, `react-plotly.js`, `shadcn/ui`.
+*   **Charts**: The `/src/graphs/` components will consume data from React Query hooks and use `/src/utils/` helpers to generate Plotly figure objects on the client-side.
+*   **UI**: Build out the tabbed interface as defined in `app_flow_pages_and_roles.txt`, ensuring Keyword Details opens in a new tab while Bloc Analytics maintains its state.
 
-## Phase 5 · QA & Deployment
+## Phase 4 · Content, Auth & Admin
 
-* **Testing**: Cross‑device testing (375 px → 1280 px).
-* **Accessibility**: Full audit (contrast ≥ 4.5 : 1, keyboard nav, ARIA labels).
-* **Deployment**: Deploy the React front-end via Lovable's Node runtime. Supabase handles the backend.
+**Goal:** Implement user authentication, static content pages, and administrative features.
 
-## Team & Ownership
+*   **Pages**: Build out static pages: Entry Hub, About, How-To.
+*   **Authentication**: Implement the complete login flow using **Supabase Auth**.
+*   **Admin**: Create an admin dashboard that uses Supabase Row Level Security (RLS) to manage users and data directly.
 
-* **You** – sole human maintainer.
-* **Lovable** – automated coding assistant guided by these `/docs/*.txt` files.
+## Phase 5 · QA & Deployment
+
+**Goal:** Conduct final testing, accessibility audits, and deploy the application.
+
+*   **Testing**: Perform cross‑device testing (375 px → 1280 px).
+*   **Accessibility**: Complete a full audit (contrast ≥ 4.5 : 1, keyboard nav, ARIA labels).
+*   **Deployment**: Deploy the React front-end via Lovable's Node runtime. Supabase handles the backend.
+```
+
+---
+
+### Commit Message
+
+After you save the changes to the file, here is a suitable commit message:
+
+```
+docs(implementation_plan): align with masterplan and task_plan
+
+Updates the implementation plan to synchronize it with other core documents:
+- Aligns phase numbering and goals with task_plan.txt for consistency.
+- Reflects the architectural shift to a direct Supabase-client model.
+- Explicitly details the data migration from SQLite and the porting of Python logic to TypeScript in Phase 2, as defined in the masterplan.
+```
+
+All of your primary planning documents are now consistent and accurately describe the project's architecture and roadmap. This is a solid foundation for any future work.
+
+What's next on your list?
