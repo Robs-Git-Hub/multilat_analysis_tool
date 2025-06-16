@@ -1,3 +1,4 @@
+
 // src/utils/ternaryCalculations.ts
 
 // --- Type Definitions ---
@@ -76,16 +77,21 @@ export interface CategoryInfo {
 // --- Calculation Functions ---
 
 /**
- * Calculates amplified ternary coordinates to make affiliations more distinct.
+ * [CORRECTED] Calculates amplified ternary coordinates using generics.
+ * This function now accepts an array of any type `T` that extends `TernaryDataItem`,
+ * and it returns an array that includes all original properties of `T` plus the
+ * new amplified coordinates. This preserves properties like `TotalMentions` and `size_px`
+ * through the transformation, fixing the TypeScript errors.
+ *
  * @param data - An array of items with P_US, P_Russia, P_Middle coordinates.
  * @param amplificationPower - The power to raise each coordinate to before re-normalizing.
  * @returns An array of items with added P_US_amp, P_Russia_amp, P_Middle_amp coordinates.
  */
-export function calculateAmplifiedCoordinates(
-  data: TernaryDataItem[],
+export function calculateAmplifiedCoordinates<T extends TernaryDataItem>(
+  data: T[],
   amplificationPower: number
-): AmplifiedTernaryDataItem[] {
-  const amplifiedData: AmplifiedTernaryDataItem[] = [];
+): (T & { P_US_amp: number; P_Russia_amp: number; P_Middle_amp: number })[] {
+  const amplifiedData: (T & { P_US_amp: number; P_Russia_amp: number; P_Middle_amp: number })[] = [];
 
   for (const item of data) {
     const { P_US, P_Russia, P_Middle } = item;
@@ -104,7 +110,6 @@ export function calculateAmplifiedCoordinates(
     const sum_prime = p_us_prime + p_russia_prime + p_middle_prime;
 
     // Handle the case where the sum is zero to avoid division by zero.
-    // In this case, the amplified values are the same as the original (all zero).
     if (sum_prime < 1e-9) {
       amplifiedData.push({
         ...item,
@@ -124,6 +129,7 @@ export function calculateAmplifiedCoordinates(
 
   return amplifiedData;
 }
+
 
 /**
  * Calculates weighted centroids for pre-defined groups of items.
