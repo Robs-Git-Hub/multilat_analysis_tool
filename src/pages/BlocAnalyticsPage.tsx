@@ -4,12 +4,7 @@
 
 import type { Data, Layout } from 'plotly.js';
 
-// Using the standard alias path. If this error persists after saving,
-// please try restarting the VS Code TypeScript server by opening the
-// command palette (Ctrl+Shift+P) and running "TypeScript: Restart TS Server".
 import TernaryPlot from '@/graphs/TernaryPlot';
-
-// Import mock data and the processing functions we'll use
 import { MOCK_RAW_DATA } from '@/graphs/mockTernaryData';
 import {
   calculateBaseTernaryAttributes,
@@ -31,9 +26,6 @@ const BlocAnalyticsPage = () => {
   const amplifiedData = calculateAmplifiedCoordinates(sizedData, amplificationPower);
 
   // --- 2. Data Transformation for Plotly ---
-  // [CORRECTED] We cast the trace object to `any` to resolve the strict typing issue.
-  // This tells TypeScript that we are confident the object shape is correct for a
-  // 'scatterternary' trace, even if the base types don't reflect it.
   const trace: Data = {
     type: 'scatterternary',
     mode: 'markers',
@@ -62,7 +54,8 @@ const BlocAnalyticsPage = () => {
     marker: {
       size: amplifiedData.map(d => d.size_px),
       color: amplifiedData.map(d => d.TotalMentions),
-      colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
+      // [CORRECTED] Using the orange/grey colorscale from the legacy prototype.
+      colorscale: [[0, '#ffba00'], [1, '#6d6559']],
       colorbar: {
         title: {
           text: 'Total Mentions',
@@ -75,15 +68,15 @@ const BlocAnalyticsPage = () => {
 
   // --- 3. Layout Configuration for Plotly ---
   const layout: Partial<Layout> = {
-    // [CORRECTED] The main title must also be an object to satisfy the types.
     title: {
       text: 'Relative Importance of N-grams by Voting Camp (Mock Data)',
     },
     ternary: {
       sum: 1,
-      aaxis: { title: 'Middle-ground emphasis', tickfont: { size: 10 } },
-      baxis: { title: 'Russia-like voting emphasis', tickfont: { size: 10 } },
-      caxis: { title: 'US-like voting emphasis', tickfont: { size: 10 } },
+      // [CORRECTED] Axis titles must be objects to satisfy Plotly's types.
+      aaxis: { title: { text: 'Middle-ground emphasis' }, tickfont: { size: 10 } },
+      baxis: { title: { text: 'Russia-like voting emphasis' }, tickfont: { size: 10 } },
+      caxis: { title: { text: 'US-like voting emphasis' }, tickfont: { size: 10 } },
     },
     paper_bgcolor: '#f6f9f9',
     plot_bgcolor: '#f6f9f9',
@@ -93,8 +86,14 @@ const BlocAnalyticsPage = () => {
 
   // --- 4. Render the Component ---
   return (
-    <div style={{ padding: '2rem' }}>
-      <TernaryPlot data={[trace]} layout={layout} />
+    <div className="p-8 bg-multilat-surface min-h-screen">
+      {/* [ADDED] Explanatory note about coordinate amplification */}
+      <div className="max-w-4xl mx-auto p-3 mb-4 text-sm text-gray-700 bg-gray-100 rounded-lg border border-gray-200">
+        <span className="font-semibold">Note:</span> For visual clarity, plotted points use amplified coordinates to better show affiliation. The hover-over pop-up always displays the original, true coordinates for data accuracy.
+      </div>
+      <div className="max-w-4xl mx-auto">
+        <TernaryPlot data={[trace]} layout={layout} />
+      </div>
     </div>
   );
 };
