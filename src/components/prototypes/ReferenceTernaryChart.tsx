@@ -21,13 +21,65 @@ interface ReferenceTernaryChartProps {
  */
 const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onNodeClick }) => {
   const isMobile = useIsMobile();
-  console.log('[Verification] Is mobile view:', isMobile);
 
   // --- 1. Data Processing Pipeline ---
   const amplificationPower = 2;
   const amplifiedData = calculateAmplifiedCoordinates(data, amplificationPower);
 
-  // --- 2. Data Transformation for Plotly ---
+  // --- 2. Responsive Layout & Marker Configuration ---
+  const baseLayoutConfig: Partial<Layout> = {
+    paper_bgcolor: '#f6f9f9',
+    plot_bgcolor: '#f6f9f9',
+    font: { color: '#1a1d1d' },
+    ternary: { sum: 1 },
+  };
+
+  const desktopLayout: Partial<Layout> = {
+    ...baseLayoutConfig,
+    title: { text: 'Reference Ternary Plot (Mock Data)' },
+    ternary: {
+      ...baseLayoutConfig.ternary,
+      aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 10 } },
+      baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 10 } },
+      caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 10 } },
+    },
+    height: 700,
+    margin: { l: 50, r: 50, b: 50, t: 100 },
+  };
+
+  const mobileLayout: Partial<Layout> = {
+    ...baseLayoutConfig,
+    title: { text: 'Reference Ternary Plot', font: { size: 16 }, y: 0.9 },
+    ternary: {
+      ...baseLayoutConfig.ternary,
+      aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 8 } },
+      baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 8 } },
+      caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 8 } },
+    },
+    height: 550, // Increased height slightly for better spacing
+    margin: { l: 20, r: 20, b: 40, t: 80 }, // Adjusted top margin for legend
+  };
+
+  const baseMarkerConfig = {
+    size: amplifiedData.map(d => d.size_px),
+    color: amplifiedData.map(d => d.TotalMentions),
+    colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
+  };
+
+  const desktopColorBar = { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 };
+  const mobileColorBar = { 
+    title: { text: 'Mentions', side: 'top', font: { size: 10 } }, 
+    thickness: 15, 
+    len: 0.8, 
+    x: 0.5, 
+    y: 1.05, 
+    xanchor: 'center',
+    yanchor: 'bottom',
+    orientation: 'h',
+    tickfont: { size: 9 } 
+  };
+
+  // --- 3. Data Transformation for Plotly ---
   const trace: Data = {
     type: 'scatterternary',
     mode: 'markers',
@@ -38,27 +90,10 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     customdata: amplifiedData, // Pass the full data object
     hovertemplate: "<b>Ngram:</b> %{text}<br>" + "P_US (Original): %{customdata.P_US:.3f}<br>" + "P_Russia (Original): %{customdata.P_Russia:.3f}<br>" + "P_Middle (Original): %{customdata.P_Middle:.3f}<br>" + "TotalMentions: %{customdata.TotalMentions}<br>" + "<extra></extra>",
     marker: {
-      size: amplifiedData.map(d => d.size_px),
-      color: amplifiedData.map(d => d.TotalMentions),
-      colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
-      colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
+      ...baseMarkerConfig,
+      colorbar: isMobile ? mobileColorBar : desktopColorBar,
     },
   } as any;
-
-  // --- 3. Layout Configuration for Plotly ---
-  const layout: Partial<Layout> = {
-    title: { text: 'Reference Ternary Plot (Mock Data)' },
-    ternary: {
-      sum: 1,
-      aaxis: { title: { text: 'Middle-ground emphasis' }, tickfont: { size: 10 } },
-      baxis: { title: { text: 'Russia-like voting emphasis' }, tickfont: { size: 10 } },
-      caxis: { title: { text: 'US-like voting emphasis' }, tickfont: { size: 10 } },
-    },
-    paper_bgcolor: '#f6f9f9',
-    plot_bgcolor: '#f6f9f9',
-    font: { color: '#1a1d1d' },
-    height: 700,
-  };
 
   const handleClick = (event: Readonly<PlotMouseEvent>) => {
     if (event.points && event.points.length > 0) {
@@ -72,7 +107,7 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   return (
     <Plot
       data={[trace]}
-      layout={layout}
+      layout={isMobile ? mobileLayout : desktopLayout}
       config={{ responsive: true, displaylogo: false }}
       style={{ width: '100%', height: '100%' }}
       useResizeHandler={true}
