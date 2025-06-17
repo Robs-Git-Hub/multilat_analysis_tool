@@ -45,7 +45,15 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   const desktopTernaryConfig = {
     sum: 1,
-    aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 10 } },
+    aaxis: {
+      title: {
+        text: 'Middle-ground<br>share',
+        // Standoff pushes the title away from the plot. Applied to both desktop
+        // and mobile to prevent the title from overlapping the chart grid.
+        standoff: 25,
+      },
+      tickfont: { size: 10 },
+    },
     baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 10 } },
     caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 10 } },
   };
@@ -62,19 +70,17 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     aaxis: {
       title: {
         text: 'Middle-ground<br>share',
-        // Pushes the top title upwards by 10px to prevent overlap with the plot triangle.
-        standoff: 10,
+        // Standoff is increased and applied globally to prevent title overlap.
+        standoff: 25,
         font: { size: 8 },
       },
       tickfont: { size: 8 },
     },
     baxis: {
-      // Uses more aggressive word wrapping for long labels on narrow screens.
       title: { text: 'Russia-like-<br>voting<br>share', font: { size: 8 } },
       tickfont: { size: 8 },
     },
     caxis: {
-      // Uses more aggressive word wrapping for long labels on narrow screens.
       title: { text: 'US-like-<br>voting<br>share', font: { size: 8 } },
       tickfont: { size: 8 },
     },
@@ -96,8 +102,6 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     ternary: mobileTernaryConfig,
     height: 450,
     margin: {
-      // Increased left/right margins to give the compact labels enough room to render
-      // without being clipped by the edge of the screen.
       l: 40,
       r: 40,
       b: 40,
