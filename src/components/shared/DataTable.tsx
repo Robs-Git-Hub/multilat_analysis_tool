@@ -1,5 +1,3 @@
-
-// src/components/shared/DataTable.tsx
 "use client";
 
 import * as React from 'react';
@@ -38,10 +36,10 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     }
   };
 
-  // Calculate dynamic height based on content for mobile
-  const calculateMobileCardHeight = (item: T, columns: ColumnDef<T>[]) => {
+  // Calculate dynamic height based on content for mobile - removed unused 'item' parameter
+  const calculateMobileCardHeight = (columns: ColumnDef<T>[]) => {
     const baseHeight = 80; // Header height
-    const rowHeight = 32; // Each data row height
+    const rowHeight = 40; // Each data row height (increased for better spacing)
     const padding = 32; // Card padding
     const contentRows = columns.length > 1 ? columns.length - 1 : 0; // Exclude title column
     return baseHeight + (contentRows * rowHeight) + padding;
@@ -53,8 +51,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     estimateSize: (index) => {
       if (isMobile) {
         // Calculate dynamic height based on actual content
-        const item = data[index];
-        return calculateMobileCardHeight(item, columns);
+        return calculateMobileCardHeight(columns);
       }
       return 53; // Desktop table row height
     },
@@ -147,7 +144,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                 <Card
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    "h-full flex flex-col mb-2",
+                    "h-full flex flex-col mb-2 overflow-hidden",
                     onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
                   )}
                 >
@@ -158,8 +155,8 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                       </CardTitle>
                     )}
                   </CardHeader>
-                  <CardContent className="p-3 pt-1 flex-grow overflow-hidden">
-                    <div className="space-y-2 text-sm">
+                  <CardContent className="p-3 pt-1 flex-grow overflow-y-auto">
+                    <div className="space-y-3 text-sm">
                       {contentColumns.map((column, index) => {
                         const value = item[column.key];
                         const displayValue = column.render ? column.render(value) : String(value);
@@ -168,7 +165,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                           <div 
                             key={String(column.key)} 
                             className={cn(
-                              "flex justify-between items-start gap-2 py-1",
+                              "flex justify-between items-start gap-2 py-2",
                               index > 0 && "border-t border-gray-100"
                             )}
                           >
