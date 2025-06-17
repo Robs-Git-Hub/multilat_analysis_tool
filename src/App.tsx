@@ -7,7 +7,6 @@ import {
   Route,
   NavLink,
 } from 'react-router-dom';
-// CORRECTED IMPORT: We now import the IFuseOptions type directly.
 import Fuse, { type IFuseOptions } from 'fuse.js';
 
 import KeywordAnalysisPage from './pages/KeywordAnalysisPage';
@@ -23,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable, ColumnDef } from './components/shared/DataTable';
 import { FilterBar } from './components/shared/FilterBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SearchHelp } from './components/shared/SearchHelp'; // Import from its new location
 
 type View = 'chart' | 'table' | 'item';
 
@@ -45,10 +45,10 @@ const PrototypePage = () => {
 
   // --- 3. Fuse.js Setup (Memoized) ---
   const fuse = useMemo(() => {
-    // CORRECTED TYPE USAGE: We now use IFuseOptions directly.
     const options: IFuseOptions<ItemWithSize> = {
       keys: ['ngram', 'Category'],
       threshold: 0.3,
+      useExtendedSearch: true,
     };
     return new Fuse(processedData, options);
   }, [processedData]);
@@ -91,7 +91,7 @@ const PrototypePage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
           <h2 className="text-lg font-semibold text-yellow-800">Prototype Control Panel</h2>
-          <p className="text-sm text-yellow-700">Use these controls to test the new UI ideas. The filter now supports fuzzy (typo-tolerant) search.</p>
+          <p className="text-sm text-yellow-700">Use these controls to test the new UI ideas. The filter now supports fuzzy (typo-tolerant) search and logical operators.</p>
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
@@ -101,7 +101,10 @@ const PrototypePage = () => {
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
-            <FilterBar filterText={filterText} onFilterTextChange={setFilterText} placeholder="Fuzzy search by n-gram..." />
+            <div className="flex items-center gap-2">
+              <FilterBar filterText={filterText} onFilterTextChange={setFilterText} placeholder="Use !, ', and space for logic..." />
+              <SearchHelp />
+            </div>
           </div>
 
           <TabsContent value="chart" className="mt-4">
