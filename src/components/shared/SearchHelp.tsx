@@ -41,16 +41,15 @@ export const SearchHelp = () => (
           <p className="text-muted-foreground mb-2">Requires you to be explicit. A space between words is not an operator.</p>
           <ul className="space-y-3">
             <li className="flex items-start">
-              {/* CORRECTED: Removed trailing quote */}
               <code className="mt-0.5 font-mono bg-gray-100 p-1 rounded">'report 'data</code>
               <span className="ml-2">Finds items with `report` **AND** `data`.</span>
             </li>
             <li className="flex items-start">
-              <code className="mt-0.5 font-mono bg-gray-100 p-1 rounded">report | data</code>
+              {/* UPDATED: Changed to the more robust syntax to handle ambiguous terms. */}
+              <code className="mt-0.5 font-mono bg-gray-100 p-1 rounded">'report | 'data</code>
               <span className="ml-2">Finds items with `report` **OR** `data`.</span>
             </li>
             <li className="flex items-start">
-              {/* CORRECTED: Removed trailing quote */}
               <code className="mt-0.5 font-mono bg-gray-100 p-1 rounded">'report !data</code>
               <span className="ml-2">Finds items with `report` **AND NOT** `data`.</span>
             </li>
