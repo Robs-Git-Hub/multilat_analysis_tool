@@ -2,28 +2,21 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import { useTernaryData } from '../useTernaryData';
-import { supabase } from '@/integrations/supabase/client';
-import { vi } from 'vitest';
+import { useTernaryData, TernaryDataPoint } from '../useTernaryData';
+import { server } from '@/mocks/server';
+import { http, HttpResponse } from 'msw';
 
-// Mock Supabase client
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-  },
-}));
-
-const mockedSupabase = vi.mocked(supabase);
-
+// Helper to create a React Query provider wrapper for our hook
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
+        // Disable retries in tests for faster feedback
         retry: false,
       },
     },
   });
-  
+
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -34,12 +27,8 @@ const createWrapper = () => {
 };
 
 describe('useTernaryData', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should fetch and transform ternary data successfully', async () => {
-    // FIX: This is the raw data as it comes from Supabase, with potential nulls.
+  it('should fetch data, transform nulls to 0/undefined, and return it', async () => {
+    // 1. ARRANGE: Define the raw data our mock API will return
     const mockRawData = [
       {
         ngram: 'test ngram',
@@ -69,8 +58,8 @@ describe('useTernaryData', () => {
       },
     ];
 
-    // FIX: This is the clean, transformed data we expect the hook to return.
-    const expectedTransformedData = [
+    // 2. ARRANGE: Define the final, clean data we expect the hook to produce
+    const expectedTransformedData: TernaryDataPoint[] = [
       {
         ngram: 'test ngram',
         normalized_frequency_A: 0.1,
@@ -99,45 +88,45 @@ describe('useTernaryData', () => {
       },
     ];
 
-    // FIX: Cast the mock's return value to `any` to avoid type conflicts with the complex Supabase types.
-    mockedSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({
-        data: mockRawData,
-        error: null,
-      }),
-    } as any);
+    // THIS IS THE NEW PART: We tell MSW what to do when it sees the request.
+    // This handler is specific to this one test.
+    server.use(
+      http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
+        return HttpResponse.json(mockRawData);
+      })
+    );
 
+    // 3. ACT: Render the hook
     const { result } = renderHook(() => useTernaryData(), {
       wrapper: createWrapper(),
     });
 
+    // 4. ASSERT: Wait for the hook to finish fetching and check the result
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    // FIX: Assert against the expected transformed data.
     expect(result.current.data).toEqual(expectedTransformedData);
-    expect(mockedSupabase.from).toHaveBeenCalledWith('oewg_ngram_statistics');
   });
 
-  it('should handle errors properly', async () => {
-    const mockError = new Error('Database connection failed');
+  it('should handle API errors gracefully', async () => {
+    // ARRANGE: Tell MSW to return a 500 server error for this request
+    server.use(
+      http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
+        return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
+      })
+    );
 
-    mockedSupabase.from.mockReturnValue({
-      select: vi.fn().mockResolvedValue({
-        data: null,
-        error: mockError,
-      }),
-    } as any);
-
+    // ACT: Render the hook
     const { result } = renderHook(() => useTernaryData(), {
       wrapper: createWrapper(),
     });
 
+    // ASSERT: Wait for the hook to enter the error state
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
     });
 
-    expect(result.current.error).toEqual(mockError);
+    expect(result.current.error).toBeInstanceOf(Error);
   });
 });
