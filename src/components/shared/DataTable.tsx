@@ -48,7 +48,6 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   if (!data.length) {
-    // On desktop, the "no results" needs to be inside the table structure to maintain layout
     return isMobile ? (
       <div className="text-center p-8 bg-gray-50 rounded-lg border mt-4">
         <p className="text-gray-600">No results.</p>
@@ -83,7 +82,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     return (
       <div
         ref={parentRef}
-        className="mt-4 overflow-y-auto max-h-[70vh]"
+        className="mt-4 overflow-y-auto max-h-[70vh] px-2" // Added horizontal padding here
       >
         <div
           className="w-full relative"
@@ -94,7 +93,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
             return (
               <div
                 key={item.id}
-                className="absolute top-0 left-0 w-full" // Removed p-2 from here
+                className="absolute top-0 left-0 w-full overflow-hidden" // Key Fix: Added overflow-hidden
                 style={{
                   height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
@@ -103,7 +102,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                 <Card
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    "h-full flex flex-col mx-2", // Added margin here instead of padding on parent
+                    "h-full flex flex-col", // Removed mx-2
                     onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
                   )}
                 >
@@ -134,7 +133,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
   // --- Desktop Table View (Virtualized) ---
   return (
     <div ref={parentRef} className="rounded-md border mt-4 overflow-y-auto max-h-[70vh]">
-      <Table className="table-fixed">
+      <Table className="table-fixed w-full">
         <TableHeader className="sticky top-0 z-10 bg-background">
           <TableRow>
             {columns.map((column) => (
@@ -151,19 +150,21 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                 data-index={virtualRow.index}
                 onClick={() => handleItemClick(item)}
                 className={cn(
-                  "absolute", // Removed w-full
+                  "absolute flex w-full", // Using flex to layout cells
                   onRowClick && "cursor-pointer hover:bg-muted/50"
                 )}
                 style={{
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
-                  width: '100%' // Set width in style for absolutely positioned tr
                 }}
               >
                 {columns.map((column, colIndex) => {
                   const cellContent = column.render ? column.render(item[column.key]) : String(item[column.key]);
                   return (
-                    <TableCell key={String(column.key)} className="truncate">
+                    <TableCell
+                      key={String(column.key)}
+                      className="truncate flex-1 py-4" // py-4 is default table cell padding
+                    >
                       {onRowClick && colIndex === 0 ? (
                         <span className="font-semibold text-teal-700">{cellContent}</span>
                       ) : (
