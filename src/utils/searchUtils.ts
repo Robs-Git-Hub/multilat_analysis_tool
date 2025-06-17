@@ -2,9 +2,11 @@
 // src/utils/searchUtils.ts
 import Fuse, { type IFuseOptions } from 'fuse.js';
 
-// Define a generic type for the items we're searching, assuming they have an 'ngram' property.
+// Define a generic type for the items we're searching.
 export interface SearchableItem {
   ngram: string;
+  Category: string;
+  TotalMentions: number;
   [key: string]: any; // Allow other properties
 }
 
@@ -26,17 +28,23 @@ export function performSearch<T extends SearchableItem>(
     return data;
   }
 
+  // The fields that Fuse.js will search within.
+  // CORRECTED: Added TotalMentions to the list of searchable keys.
+  const searchKeys = ['ngram', 'Category', 'TotalMentions'];
+
   // Fuzzy search options: forgiving and finds close matches.
   const fuzzyOptions: IFuseOptions<T> = {
-    keys: ['ngram'],
-    threshold: 0.3, // Allows for some fuzziness
+    keys: searchKeys,
+    threshold: 0.3,
   };
 
   // Precise search options: requires exact matches and enables logical operators.
   const preciseOptions: IFuseOptions<T> = {
-    keys: ['ngram'],
-    useExtendedSearch: true, // Enables operators like !, ", '
-    threshold: 0.0, // CRITICAL: Requires a perfect match
+    keys: searchKeys,
+    useExtendedSearch: true,
+    threshold: 0.0,
+    distance: 0,
+    ignoreLocation: false,
   };
 
   const fuse = new Fuse(data, isPrecise ? preciseOptions : fuzzyOptions);
