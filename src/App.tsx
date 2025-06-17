@@ -60,6 +60,7 @@ const PrototypePage = () => {
 
   const handleViewChange = (newView: string) => {
     if (newView === 'item' && view !== 'item') {
+      // If user clicks "Item View" tab directly, clear any selection
       setSelectedItem(null);
     }
     setView(newView as View);
@@ -90,18 +91,25 @@ const PrototypePage = () => {
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
-            <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
-              <FilterBar 
-                filterText={filterText} 
-                onFilterTextChange={setFilterText} 
-                placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
-              />
-              <div className="flex items-center space-x-2">
-                <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
-                <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
+
+            {view !== 'item' ? (
+              <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
+                <FilterBar
+                  filterText={filterText}
+                  onFilterTextChange={setFilterText}
+                  placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
+                />
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
+                  <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
+                </div>
+                <SearchHelp />
               </div>
-              <SearchHelp />
-            </div>
+            ) : (
+              <div className="flex-grow text-sm text-gray-600 bg-gray-50 p-3 rounded-md border text-center md:text-left">
+                <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
+              </div>
+            )}
           </div>
 
           <TabsContent value="chart" className="mt-4">
@@ -130,7 +138,7 @@ const PrototypePage = () => {
               </Card>
             ) : (
               <div className="text-center p-8 bg-gray-50 rounded-lg border">
-                <p className="text-gray-600">Select an item from the chart or use the filter to view details.</p>
+                <p className="text-gray-600">Select an item from the Chart or Table view to see its details here.</p>
               </div>
             )}
           </TabsContent>
