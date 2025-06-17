@@ -85,42 +85,35 @@ const PrototypePage = () => {
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
-          {/* --- START: REVISED CONTROL PANEL LAYOUT --- */}
-          <div className="bg-white p-3 border rounded-lg mb-4">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              {/* Part 1: Tabs list (no changes) */}
-              <TabsList>
-                <TabsTrigger value="chart">Chart View</TabsTrigger>
-                <TabsTrigger value="table">Table View</TabsTrigger>
-                <TabsTrigger value="item">Item View</TabsTrigger>
-              </TabsList>
+          {/* --- START: CORRECTED CONTROL PANEL LAYOUT --- */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+            <TabsList>
+              <TabsTrigger value="chart">Chart View</TabsTrigger>
+              <TabsTrigger value="table">Table View</TabsTrigger>
+              <TabsTrigger value="item">Item View</TabsTrigger>
+            </TabsList>
 
-              {/* Part 2: This container will grow to fill the remaining space */}
-              <div className="flex-grow w-full">
-                {view !== 'item' ? (
-                  // The filter controls, now aligned to the right of their container
-                  <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
-                    <FilterBar
-                      filterText={filterText}
-                      onFilterTextChange={setFilterText}
-                      placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
-                    />
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
-                      <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
-                    </div>
-                    <SearchHelp />
-                  </div>
-                ) : (
-                  // The informational message, now with simpler styling
-                  <div className="text-sm text-gray-600 text-center md:text-left px-1">
-                    <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
-                  </div>
-                )}
+            {view !== 'item' ? (
+              <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
+                <FilterBar
+                  filterText={filterText}
+                  onFilterTextChange={setFilterText}
+                  placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
+                />
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
+                  <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
+                </div>
+                <SearchHelp />
               </div>
-            </div>
+            ) : (
+              <div className="flex-grow text-sm text-gray-600 text-center md:text-left">
+                <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
+              </div>
+            )}
           </div>
-          {/* --- END: REVISED CONTROL PANEL LAYOUT --- */}
+          {/* --- END: CORRECTED CONTROL PANEL LAYOUT --- */}
+
 
           <TabsContent value="chart" className="mt-4">
             <ReferenceTernaryChart data={filteredData} onNodeClick={handleNodeClick} />
