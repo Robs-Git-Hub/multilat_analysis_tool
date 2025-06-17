@@ -7,6 +7,8 @@ import {
   Route,
   NavLink,
 } from 'react-router-dom';
+// CORRECTED IMPORT: We now import the IFuseOptions type directly.
+import Fuse, { type IFuseOptions } from 'fuse.js';
 
 import KeywordAnalysisPage from './pages/KeywordAnalysisPage';
 import CountryAnalysisPage from './pages/CountryAnalysisPage';
@@ -34,7 +36,6 @@ const PrototypePage = () => {
   const [selectedItem, setSelectedItem] = useState<ItemWithSize | null>(null);
 
   // --- 2. Data Processing (Memoized) ---
-  // This pipeline runs only once, as the source data is static.
   const processedData = useMemo(() => {
     const attributeConfig = { us_count_col: 'US', russia_count_col: 'Russia', middle_count_col: 'Middle' };
     const bubbleSizeConfig = { minSize: 10, maxSize: 50, scalingPower: 1.5 };
@@ -42,29 +43,40 @@ const PrototypePage = () => {
     return recalculateBubbleSizes(baseData, bubbleSizeConfig);
   }, []);
 
-  // This derived state recalculates whenever the filter text changes.
-  const filteredData = useMemo(() => {
-    if (!filterText) return processedData;
-    return processedData.filter(item =>
-      (item.ngram as string).toLowerCase().includes(filterText.toLowerCase())
-    );
-  }, [processedData, filterText]);
+  // --- 3. Fuse.js Setup (Memoized) ---
+  const fuse = useMemo(() => {
+    // CORRECTED TYPE USAGE: We now use IFuseOptions directly.
+    const options: IFuseOptions<ItemWithSize> = {
+      keys: ['ngram', 'Category'],
+      threshold: 0.3,
+    };
+    return new Fuse(processedData, options);
+  }, [processedData]);
 
-  // --- 3. Event Handlers ---
+  // --- 4. Filtering Logic ---
+  const filteredData = useMemo(() => {
+    if (!filterText) {
+      return processedData;
+    }
+    const results = fuse.search(filterText);
+    return results.map(result => result.item);
+  }, [processedData, filterText, fuse]);
+
+
+  // --- 5. Event Handlers ---
   const handleNodeClick = (item: ItemWithSize) => {
     setSelectedItem(item);
     setView('item');
   };
 
   const handleViewChange = (newView: string) => {
-    // When switching to item view via toggle, clear selection
     if (newView === 'item' && view !== 'item') {
       setSelectedItem(null);
     }
     setView(newView as View);
   }
 
-  // --- 4. View-Specific Configurations ---
+  // --- 6. View-Specific Configurations ---
   const tableColumns: ColumnDef<ItemWithSize>[] = [
     { key: 'ngram', header: 'N-gram' },
     { key: 'TotalMentions', header: 'Total Mentions' },
@@ -73,13 +85,13 @@ const PrototypePage = () => {
     { key: 'P_Middle', header: 'P(Middle)', render: (val) => (val as number).toFixed(3) },
   ];
 
-  // --- 5. Render Logic ---
+  // --- 7. Render Logic ---
   return (
     <div className="p-4 sm:p-8 bg-multilat-surface min-h-screen">
       <div className="max-w-5xl mx-auto">
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
           <h2 className="text-lg font-semibold text-yellow-800">Prototype Control Panel</h2>
-          <p className="text-sm text-yellow-700">Use these controls to test the new UI ideas.</p>
+          <p className="text-sm text-yellow-700">Use these controls to test the new UI ideas. The filter now supports fuzzy (typo-tolerant) search.</p>
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
@@ -89,7 +101,7 @@ const PrototypePage = () => {
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
-            <FilterBar filterText={filterText} onFilterTextChange={setFilterText} placeholder="Filter by n-gram..." />
+            <FilterBar filterText={filterText} onFilterTextChange={setFilterText} placeholder="Fuzzy search by n-gram..." />
           </div>
 
           <TabsContent value="chart" className="mt-4">
