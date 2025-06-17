@@ -49,8 +49,8 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   const mobileLayout: Partial<Layout> = {
     ...baseLayoutConfig,
-    // Position the title slightly lower to make space for the colorbar above it.
-    title: { text: 'Reference Ternary Plot', font: { size: 16 }, y: 0.93 },
+    // Position the title slightly lower to ensure it doesn't overlap with the colorbar.
+    title: { text: 'Reference Ternary Plot', font: { size: 16 }, y: 0.9 },
     ternary: {
       ...baseLayoutConfig.ternary,
       aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 8 } },
@@ -58,8 +58,8 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
       caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 8 } },
     },
     height: 550,
-    // Manually create a large top margin to reserve space for the colorbar and title.
-    margin: { l: 20, r: 20, b: 40, t: 120 }, 
+    // Increase top margin slightly to ensure enough space for the colorbar and title.
+    margin: { l: 20, r: 20, b: 40, t: 130 }, 
   };
 
   const baseMarkerConfig = {
@@ -70,15 +70,14 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   const desktopColorBar = { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 };
   
-  // Correctly position the horizontal colorbar within the manually created top margin.
   const mobileColorBar = { 
     title: { text: 'Mentions', side: 'top', font: { size: 10 } }, 
     thickness: 15, 
     len: 0.8, 
     x: 0.5, 
-    y: 1, // Position at the very top of the plot area.
+    y: 1,
     xanchor: 'center',
-    yanchor: 'top', // Anchor to the top.
+    yanchor: 'top',
     orientation: 'h',
     tickfont: { size: 9 } 
   };
