@@ -20,4 +20,6 @@ export const MOCK_RAW_DATA: RawCountItem[] = [
   { id: 5, ngram: 'Trade Policy', US: 250, Russia: 50, Middle: 150, Category: 'Category A' },
   { id: 6, ngram: 'Peacekeeping', US: 200, Russia: 180, Middle: 220, Category: 'Category B' },
   { id: 7, ngram: 'Development Aid', US: 150, Russia: 10, Middle: 80, Category: 'Category A' },
+  // ADDED: New data row for front-end testing of the NOT operator.
+  { id: 8, ngram: 'Social Rights', US: 280, Russia: 250, Middle: 350, Category: 'Category A' },
 ];

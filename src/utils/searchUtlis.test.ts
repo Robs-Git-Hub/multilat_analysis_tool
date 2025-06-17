@@ -1,13 +1,12 @@
 
 // src/utils/searchUtils.test.ts
 import { describe, it, expect } from 'vitest';
-// REMOVED: The import for the non-existent 'SearchableItem'.
 import { performSearch } from './searchUtils';
-import type { ItemWithSize } from './ternaryDataProcessing'; // ADDED: Import the correct type for consistency.
+// ADDED: The correct import for the ItemWithSize type.
+import type { ItemWithSize } from './ternaryDataProcessing';
 
-// Enhanced mock data with 'Category' and 'TotalMentions' fields.
-// CORRECTED: The mock data is now explicitly typed as a partial ItemWithSize array,
-// ensuring it's compatible with the performSearch function.
+// Enhanced mock data. It is typed as a Partial<ItemWithSize>[] to be compatible
+// with the search utility while only defining the fields needed for testing.
 const mockData: Partial<ItemWithSize>[] = [
   { id: 1, ngram: 'Human Rights',    Category: 'Social',   TotalMentions: 300 },
   { id: 2, ngram: 'Animal Rights',   Category: 'Social',   TotalMentions: 200 },
@@ -80,6 +79,16 @@ describe('performSearch', () => {
         // WHY WE EXPECT THIS: The double quotes enforce an exact, character-for-character match.
         const results = performSearch(mockData as ItemWithSize[], `"Colour Scheme"`, true);
         expect(results).toEqual([{ id: 4, ngram: 'Colour Scheme', Category: 'Design', TotalMentions: 50 }]);
+      });
+    });
+
+    describe('General Syntax Rules', () => {
+      it('should return no results for multiple words without an operator', () => {
+        // USER INPUT: Human Rights
+        // EXPECTED BEHAVIOUR: Returns no results.
+        // WHY WE EXPECT THIS: In precise mode, a space is not a logical operator. The user must explicitly use `|` for OR, `'` for AND, or `"` for an exact phrase.
+        const results = performSearch(mockData as ItemWithSize[], `Human Rights`, true);
+        expect(results).toHaveLength(0);
       });
     });
 
