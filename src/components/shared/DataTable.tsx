@@ -48,7 +48,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => {
+    estimateSize: (_) => {
       if (isMobile) {
         // Calculate dynamic height based on actual content
         return calculateMobileCardHeight(columns);
