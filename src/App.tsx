@@ -85,26 +85,28 @@ const PrototypePage = () => {
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
-          {/* --- START: CSS GRID CONTROL PANEL LAYOUT --- */}
-          {/* This container is a flex column on mobile, and a 2-column grid on desktop */}
-          <div className="flex flex-col md:grid md:grid-cols-[auto_1fr] md:items-center gap-4 mb-4">
+          {/* --- START: FINAL RESPONSIVE CONTROL PANEL LAYOUT --- */}
+          {/* On mobile: flex-col. On desktop: grid with content-sized columns, aligned to the end. */}
+          <div className="flex flex-col md:grid md:grid-cols-[auto_auto] md:justify-end md:items-center md:gap-4 mb-4">
             
-            {/* Grid Column 1: Tabs list (no change) */}
             <TabsList>
               <TabsTrigger value="chart">Chart View</TabsTrigger>
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
 
-            {/* Grid Column 2: Filter controls or info message */}
             {view !== 'item' ? (
-              // This div no longer wraps, ensuring a single line on desktop
-              <div className="flex items-center justify-start md:justify-end gap-4">
-                <FilterBar
-                  filterText={filterText}
-                  onFilterTextChange={setFilterText}
-                  placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
-                />
+              // This container now wraps its items and uses gaps for spacing.
+              <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+                {/* Wrapper ensures correct width on mobile vs desktop */}
+                <div className="w-full md:w-auto md:flex-grow">
+                  <FilterBar
+                    filterText={filterText}
+                    onFilterTextChange={setFilterText}
+                    placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
+                  />
+                </div>
+                {/* Wrapper for the toggles to group them */}
                 <div className="flex items-center space-x-2">
                   <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
                   <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
@@ -117,7 +119,7 @@ const PrototypePage = () => {
               </div>
             )}
           </div>
-          {/* --- END: CSS GRID CONTROL PANEL LAYOUT --- */}
+          {/* --- END: FINAL RESPONSIVE CONTROL PANEL LAYOUT --- */}
 
 
           <TabsContent value="chart" className="mt-4">
