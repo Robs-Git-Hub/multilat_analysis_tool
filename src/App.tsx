@@ -109,7 +109,7 @@ const PrototypePage = () => {
           </TabsContent>
 
           <TabsContent value="table" className="mt-4">
-            <DataTable columns={tableColumns} data={filteredData} />
+            <DataTable columns={tableColumns} data={filteredData} onRowClick={handleNodeClick} />
           </TabsContent>
 
           <TabsContent value="item" className="mt-4">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export interface ColumnDef<T> {
   key: keyof T;
@@ -22,10 +23,17 @@ export interface ColumnDef<T> {
 interface DataTableProps<T> {
   data: T[];
   columns: ColumnDef<T>[];
+  onRowClick?: (item: T) => void;
 }
 
-export function DataTable<T extends { id: string | number }>({ data, columns }: DataTableProps<T>) {
+export function DataTable<T extends { id: string | number }>({ data, columns, onRowClick }: DataTableProps<T>) {
   const isMobile = useIsMobile();
+
+  const handleItemClick = (item: T) => {
+    if (onRowClick) {
+      onRowClick(item);
+    }
+  };
 
   // On mobile, render a list of cards
   if (isMobile) {
@@ -37,14 +45,19 @@ export function DataTable<T extends { id: string | number }>({ data, columns }: 
       );
     }
 
-    // Assumption: The first column is the primary identifier for the card title.
     const titleColumn = columns[0];
     const contentColumns = columns.length > 1 ? columns.slice(1) : [];
 
     return (
       <div className="space-y-4 mt-4">
         {data.map((item) => (
-          <Card key={item.id}>
+          <Card
+            key={item.id}
+            onClick={() => handleItemClick(item)}
+            className={cn(
+              onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
+            )}
+          >
             <CardHeader className="p-4 pb-2">
               {titleColumn && <CardTitle className="text-lg">{String(item[titleColumn.key])}</CardTitle>}
             </CardHeader>
@@ -82,7 +95,13 @@ export function DataTable<T extends { id: string | number }>({ data, columns }: 
         <TableBody>
           {data.length ? (
             data.map((item) => (
-              <TableRow key={item.id}>
+              <TableRow
+                key={item.id}
+                onClick={() => handleItemClick(item)}
+                className={cn(
+                  onRowClick && "cursor-pointer hover:bg-muted/50"
+                )}
+              >
                 {columns.map((column) => (
                   <TableCell key={String(column.key)}>
                     {column.render
