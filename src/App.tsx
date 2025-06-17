@@ -81,36 +81,46 @@ const PrototypePage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
           <h2 className="text-lg font-semibold text-yellow-800">Prototype Control Panel</h2>
-          <p className="text-sm text-yellow-700">Use the "Precise" toggle to switch between fuzzy and logical search modes.</p>
+          <p className="text-sm text-yellow-700">This is a temporary notice area for development.</p>
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-            <TabsList>
-              <TabsTrigger value="chart">Chart View</TabsTrigger>
-              <TabsTrigger value="table">Table View</TabsTrigger>
-              <TabsTrigger value="item">Item View</TabsTrigger>
-            </TabsList>
+          {/* --- START: REVISED CONTROL PANEL LAYOUT --- */}
+          <div className="bg-white p-3 border rounded-lg mb-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              {/* Part 1: Tabs list (no changes) */}
+              <TabsList>
+                <TabsTrigger value="chart">Chart View</TabsTrigger>
+                <TabsTrigger value="table">Table View</TabsTrigger>
+                <TabsTrigger value="item">Item View</TabsTrigger>
+              </TabsList>
 
-            {view !== 'item' ? (
-              <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
-                <FilterBar
-                  filterText={filterText}
-                  onFilterTextChange={setFilterText}
-                  placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
-                />
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
-                  <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
-                </div>
-                <SearchHelp />
+              {/* Part 2: This container will grow to fill the remaining space */}
+              <div className="flex-grow w-full">
+                {view !== 'item' ? (
+                  // The filter controls, now aligned to the right of their container
+                  <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
+                    <FilterBar
+                      filterText={filterText}
+                      onFilterTextChange={setFilterText}
+                      placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
+                    />
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
+                      <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
+                    </div>
+                    <SearchHelp />
+                  </div>
+                ) : (
+                  // The informational message, now with simpler styling
+                  <div className="text-sm text-gray-600 text-center md:text-left px-1">
+                    <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="flex-grow text-sm text-gray-600 bg-gray-50 p-3 rounded-md border text-center md:text-left">
-                <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
-              </div>
-            )}
+            </div>
           </div>
+          {/* --- END: REVISED CONTROL PANEL LAYOUT --- */}
 
           <TabsContent value="chart" className="mt-4">
             <ReferenceTernaryChart data={filteredData} onNodeClick={handleNodeClick} />
