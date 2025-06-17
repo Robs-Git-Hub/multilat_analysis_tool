@@ -8,7 +8,7 @@ import Plot from 'react-plotly.js';
 import { ItemWithSize } from '@/utils/ternaryDataProcessing';
 import { calculateAmplifiedCoordinates } from '@/utils/ternaryCalculations';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { HorizontalColorbar } from './HorizontalColorbar'; // Import our new component
+import { HorizontalColorbar } from './HorizontalColorbar';
 
 interface ReferenceTernaryChartProps {
   data: ItemWithSize[];
@@ -53,12 +53,12 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   };
 
   // On mobile, we remove the title and let our custom components handle it.
-  // The margin is smaller as we no longer need to reserve space for a Plotly title/legend.
+  // The height is reduced to remove excess whitespace above the plot.
   const mobileLayout: Partial<Layout> = {
     ...baseLayoutConfig,
     title: { text: '' }, // Disable Plotly's title
-    height: 550,
-    margin: { l: 20, r: 20, b: 40, t: 20 }, // Reduced top margin
+    height: 450, // REDUCED: This removes the large gap above the chart.
+    margin: { l: 20, r: 20, b: 40, t: 20 },
   };
 
   const colorscale: [number, string][] = [[0, '#e0f2f1'], [1, '#437e84']];
@@ -81,7 +81,6 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     hovertemplate: "<b>Ngram:</b> %{text}<br>" + "P_US (Original): %{customdata.P_US:.3f}<br>" + "P_Russia (Original): %{customdata.P_Russia:.3f}<br>" + "P_Middle (Original): %{customdata.P_Middle:.3f}<br>" + "TotalMentions: %{customdata.TotalMentions}<br>" + "<extra></extra>",
     marker: {
       ...baseMarkerConfig,
-      // On desktop, show the vertical colorbar. On mobile, hide it.
       showscale: !isMobile,
       colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
     },
@@ -103,20 +102,24 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
           Reference Ternary Plot
         </h3>
-        <HorizontalColorbar
-          title="Total Mentions"
-          min={minMentions}
-          max={maxMentions}
-          colorscale={colorscale}
-        />
         <Plot
           data={[trace]}
           layout={mobileLayout}
           config={{ responsive: true, displaylogo: false }}
-          style={{ width: '100%', height: '100%' }}
+          // Let the layout's height property control the size
+          style={{ width: '100%' }}
           useResizeHandler={true}
           onClick={handleClick}
         />
+        {/* MOVED: The colorbar is now rendered below the plot */}
+        <div className="w-full mt-4">
+          <HorizontalColorbar
+            title="Total Mentions"
+            min={minMentions}
+            max={maxMentions}
+            colorscale={colorscale}
+          />
+        </div>
       </div>
     );
   }
