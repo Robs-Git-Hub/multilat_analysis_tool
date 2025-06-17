@@ -84,13 +84,13 @@ const PrototypePage = () => {
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
             <TabsList>
               <TabsTrigger value="chart">Chart View</TabsTrigger>
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
               <FilterBar 
                 filterText={filterText} 
                 onFilterTextChange={setFilterText} 
