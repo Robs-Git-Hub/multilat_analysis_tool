@@ -102,13 +102,21 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                   onRowClick && "cursor-pointer hover:bg-muted/50"
                 )}
               >
-                {columns.map((column) => (
-                  <TableCell key={String(column.key)}>
-                    {column.render
-                      ? column.render(item[column.key])
-                      : String(item[column.key])}
-                  </TableCell>
-                ))}
+                {columns.map((column, colIndex) => {
+                  const cellContent = column.render
+                    ? column.render(item[column.key])
+                    : String(item[column.key]);
+                  
+                  return (
+                    <TableCell key={String(column.key)}>
+                      {onRowClick && colIndex === 0 ? (
+                        <span className="font-semibold text-teal-700">{cellContent}</span>
+                      ) : (
+                        cellContent
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (
