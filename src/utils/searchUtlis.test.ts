@@ -2,11 +2,10 @@
 // src/utils/searchUtils.test.ts
 import { describe, it, expect } from 'vitest';
 import { performSearch } from './searchUtils';
-// ADDED: The correct import for the ItemWithSize type.
 import type { ItemWithSize } from './ternaryDataProcessing';
 
-// Enhanced mock data. It is typed as a Partial<ItemWithSize>[] to be compatible
-// with the search utility while only defining the fields needed for testing.
+// Enhanced mock data with 'Category' and 'TotalMentions' fields to allow for
+// comprehensive testing of multi-field search capabilities.
 const mockData: Partial<ItemWithSize>[] = [
   { id: 1, ngram: 'Human Rights',    Category: 'Social',   TotalMentions: 300 },
   { id: 2, ngram: 'Animal Rights',   Category: 'Social',   TotalMentions: 200 },
@@ -18,6 +17,7 @@ const mockData: Partial<ItemWithSize>[] = [
 describe('performSearch', () => {
   // ===========================================================================
   // Fuzzy Search Tests (isPrecise = false)
+  // These tests confirm that the default mode is forgiving.
   // ===========================================================================
   describe('Fuzzy Mode (isPrecise: false)', () => {
     it('should return close matches for typos', () => {
@@ -39,6 +39,8 @@ describe('performSearch', () => {
 
   // ===========================================================================
   // Precise Search Tests (isPrecise = true)
+  // These tests verify that all logical operators work as documented and that
+  // matching is exact and case-insensitive across all specified search keys.
   // ===========================================================================
   describe('Precise Mode (isPrecise: true)', () => {
 
@@ -89,6 +91,32 @@ describe('performSearch', () => {
         // WHY WE EXPECT THIS: In precise mode, a space is not a logical operator. The user must explicitly use `|` for OR, `'` for AND, or `"` for an exact phrase.
         const results = performSearch(mockData as ItemWithSize[], `Human Rights`, true);
         expect(results).toHaveLength(0);
+      });
+    });
+
+    describe('Ambiguity and Specificity', () => {
+      it('should return a match for a single, unambiguous term without an operator', () => {
+        // USER INPUT: trade
+        // EXPECTED BEHAVIOUR: Returns 'Trade Policy'.
+        // WHY WE EXPECT THIS: The word "trade" is unique to one item. Fuse.js makes an exception to the "no operators" rule because there is no ambiguity.
+        const results = performSearch(mockData as ItemWithSize[], `trade`, true);
+        expect(results.map(r => r.ngram)).toEqual(['Trade Policy']);
+      });
+
+      it('should return no match for a single, ambiguous term without an operator', () => {
+        // USER INPUT: rights
+        // EXPECTED BEHAVIOUR: Returns no results.
+        // WHY WE EXPECT THIS: The word "rights" appears in multiple items. Fuse.js refuses to guess which one the user wants and returns nothing, forcing the user to be more specific.
+        const results = performSearch(mockData as ItemWithSize[], `rights`, true);
+        expect(results).toHaveLength(0);
+      });
+
+      it('should return all matches for an ambiguous term when made specific with an operator', () => {
+        // USER INPUT: 'rights
+        // EXPECTED BEHAVIOUR: Returns both 'Human Rights' and 'Animal Rights'.
+        // WHY WE EXPECT THIS: The `'` prefix is an explicit instruction to find all items containing "rights", resolving the ambiguity.
+        const results = performSearch(mockData as ItemWithSize[], `'rights`, true);
+        expect(results.map(r => r.ngram).sort()).toEqual(['Animal Rights', 'Human Rights']);
       });
     });
 
