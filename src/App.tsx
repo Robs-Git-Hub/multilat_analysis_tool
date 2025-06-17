@@ -85,16 +85,21 @@ const PrototypePage = () => {
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
-          {/* --- START: CORRECTED CONTROL PANEL LAYOUT --- */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+          {/* --- START: CSS GRID CONTROL PANEL LAYOUT --- */}
+          {/* This container is a flex column on mobile, and a 2-column grid on desktop */}
+          <div className="flex flex-col md:grid md:grid-cols-[auto_1fr] md:items-center gap-4 mb-4">
+            
+            {/* Grid Column 1: Tabs list (no change) */}
             <TabsList>
               <TabsTrigger value="chart">Chart View</TabsTrigger>
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
 
+            {/* Grid Column 2: Filter controls or info message */}
             {view !== 'item' ? (
-              <div className="flex flex-wrap items-center justify-start md:justify-end gap-4">
+              // This div no longer wraps, ensuring a single line on desktop
+              <div className="flex items-center justify-start md:justify-end gap-4">
                 <FilterBar
                   filterText={filterText}
                   onFilterTextChange={setFilterText}
@@ -107,12 +112,12 @@ const PrototypePage = () => {
                 <SearchHelp />
               </div>
             ) : (
-              <div className="flex-grow text-sm text-gray-600 text-center md:text-left">
+              <div className="text-sm text-gray-600 text-center md:text-left">
                 <p>Filtering is available in the <strong>Chart</strong> and <strong>Table</strong> views.</p>
               </div>
             )}
           </div>
-          {/* --- END: CORRECTED CONTROL PANEL LAYOUT --- */}
+          {/* --- END: CSS GRID CONTROL PANEL LAYOUT --- */}
 
 
           <TabsContent value="chart" className="mt-4">
