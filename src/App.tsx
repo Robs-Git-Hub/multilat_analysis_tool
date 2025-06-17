@@ -22,7 +22,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable, ColumnDef } from './components/shared/DataTable';
 import { FilterBar } from './components/shared/FilterBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SearchHelp } from './components/shared/SearchHelp'; // Import from its new location
+import { SearchHelp } from './components/shared/SearchHelp';
+import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox
+import { Label } from '@/components/ui/label'; // Import Label
 
 type View = 'chart' | 'table' | 'item';
 
@@ -34,6 +36,7 @@ const PrototypePage = () => {
   const [view, setView] = useState<View>('chart');
   const [filterText, setFilterText] = useState('');
   const [selectedItem, setSelectedItem] = useState<ItemWithSize | null>(null);
+  const [isPrecise, setIsPrecise] = useState(false); // State for the "Precise" toggle
 
   // --- 2. Data Processing (Memoized) ---
   const processedData = useMemo(() => {
@@ -43,17 +46,22 @@ const PrototypePage = () => {
     return recalculateBubbleSizes(baseData, bubbleSizeConfig);
   }, []);
 
-  // --- 3. Fuse.js Setup (Memoized) ---
+  // --- 3. Fuse.js Setup (Memoized and now DYNAMIC) ---
   const fuse = useMemo(() => {
-    const options: IFuseOptions<ItemWithSize> = {
+    // Base options that are always active
+    const baseOptions: IFuseOptions<ItemWithSize> = {
       keys: ['ngram', 'Category'],
-      threshold: 0.3,
-      useExtendedSearch: true,
     };
-    return new Fuse(processedData, options);
-  }, [processedData]);
 
-  // --- 4. Filtering Logic ---
+    // Conditionally build the final options object based on the "Precise" toggle
+    const finalOptions = isPrecise
+      ? { ...baseOptions, useExtendedSearch: true } // Precise Mode: Logical search
+      : { ...baseOptions, threshold: 0.3 };       // Normal Mode: Fuzzy search
+
+    return new Fuse(processedData, finalOptions);
+  }, [processedData, isPrecise]); // Re-create the Fuse instance when `isPrecise` changes
+
+  // --- 4. Filtering Logic (No changes needed here) ---
   const filteredData = useMemo(() => {
     if (!filterText) {
       return processedData;
@@ -91,7 +99,7 @@ const PrototypePage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
           <h2 className="text-lg font-semibold text-yellow-800">Prototype Control Panel</h2>
-          <p className="text-sm text-yellow-700">Use these controls to test the new UI ideas. The filter now supports fuzzy (typo-tolerant) search and logical operators.</p>
+          <p className="text-sm text-yellow-700">Use the "Precise" toggle to switch between fuzzy and logical search modes.</p>
         </div>
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
@@ -101,8 +109,16 @@ const PrototypePage = () => {
               <TabsTrigger value="table">Table View</TabsTrigger>
               <TabsTrigger value="item">Item View</TabsTrigger>
             </TabsList>
-            <div className="flex items-center gap-2">
-              <FilterBar filterText={filterText} onFilterTextChange={setFilterText} placeholder="Use !, ', and space for logic..." />
+            <div className="flex items-center gap-4">
+              <FilterBar 
+                filterText={filterText} 
+                onFilterTextChange={setFilterText} 
+                placeholder={isPrecise ? "Use !, ', and space for logic..." : "Fuzzy search by n-gram..."}
+              />
+              <div className="flex items-center space-x-2">
+                <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
+                <Label htmlFor="precise-toggle" className="text-sm font-medium whitespace-nowrap">Precise</Label>
+              </div>
               <SearchHelp />
             </div>
           </div>
