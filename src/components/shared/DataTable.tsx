@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from 'react';
@@ -48,18 +47,6 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
-  // Debug logging for mobile
-  React.useEffect(() => {
-    if (isMobile && data.length > 0) {
-      console.log('DataTable Mobile Debug:', {
-        dataCount: data.length,
-        columnsCount: columns.length,
-        firstItem: data[0],
-        columns: columns.map(col => ({ key: col.key, header: col.header }))
-      });
-    }
-  }, [isMobile, data, columns]);
-
   if (!data.length) {
     return isMobile ? (
       <div className="text-center p-8 bg-gray-50 rounded-lg border mt-4">
@@ -92,76 +79,51 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     const titleColumn = columns[0];
     const contentColumns = columns.length > 1 ? columns.slice(1) : [];
 
-    console.log('Mobile Card Data:', {
-      titleColumn: titleColumn?.header,
-      contentColumnsCount: contentColumns.length,
-      contentColumns: contentColumns.map(col => col.header)
-    });
-
     return (
       <div className="mt-4 overflow-y-auto max-h-[70vh] px-2 space-y-3">
-        {data.map((item, index) => {
-          // Debug log for each card
-          console.log(`Card ${index}:`, {
-            item,
-            titleValue: titleColumn ? item[titleColumn.key] : 'No title',
-            contentData: contentColumns.map(col => ({ 
-              header: col.header, 
-              value: item[col.key] 
-            }))
-          });
-
-          return (
-            <Card
-              key={item.id}
-              onClick={() => handleItemClick(item)}
-              className={cn(
-                "flex flex-col",
-                onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
+        {data.map((item) => (
+          <Card
+            key={item.id}
+            onClick={() => handleItemClick(item)}
+            className={cn(
+              "flex flex-col",
+              onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
+            )}
+          >
+            <CardHeader className="p-3 pb-2">
+              {titleColumn && (
+                <CardTitle className="text-base font-semibold text-teal-700 break-words">
+                  {String(item[titleColumn.key])}
+                </CardTitle>
               )}
-            >
-              <CardHeader className="p-3 pb-2">
-                {titleColumn && (
-                  <CardTitle className="text-base font-semibold text-teal-700 break-words">
-                    {String(item[titleColumn.key])}
-                  </CardTitle>
-                )}
-              </CardHeader>
-              <CardContent className="p-3 pt-1">
-                <div className="space-y-3 text-sm">
-                  {contentColumns.map((column, columnIndex) => {
-                    const value = item[column.key];
-                    const displayValue = column.render ? column.render(value) : String(value);
-                    
-                    console.log(`Card ${index}, Column ${columnIndex}:`, {
-                      columnKey: column.key,
-                      columnHeader: column.header,
-                      rawValue: value,
-                      displayValue
-                    });
-                    
-                    return (
-                      <div 
-                        key={String(column.key)} 
-                        className={cn(
-                          "flex flex-col gap-1 py-2",
-                          columnIndex > 0 && "border-t border-gray-100"
-                        )}
-                      >
-                        <span className="font-medium text-muted-foreground text-xs">
-                          {column.header}
-                        </span>
-                        <span className="font-medium text-gray-900 break-words">
-                          {displayValue}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="space-y-3 text-sm">
+                {contentColumns.map((column, columnIndex) => {
+                  const value = item[column.key];
+                  const displayValue = column.render ? column.render(value) : String(value);
+
+                  return (
+                    <div
+                      key={String(column.key)}
+                      className={cn(
+                        "flex flex-col gap-1 py-2",
+                        columnIndex > 0 && "border-t border-gray-100"
+                      )}
+                    >
+                      <span className="font-medium text-muted-foreground text-xs">
+                        {column.header}
+                      </span>
+                      <span className="font-medium text-gray-900 break-words">
+                        {displayValue}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
   }
@@ -217,4 +179,3 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     </div>
   );
 }
-
