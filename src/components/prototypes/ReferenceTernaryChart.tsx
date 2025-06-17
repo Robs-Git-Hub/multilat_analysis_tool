@@ -1,15 +1,8 @@
 
-// src/pages/BlocAnalyticsPage.tsx
+// src/components/prototypes/ReferenceTernaryChart.tsx
 "use client";
 
 import type { Data, Layout } from 'plotly.js';
-
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 
 import TernaryPlot from '@/graphs/TernaryPlot';
 import { MOCK_RAW_DATA } from '@/graphs/mockTernaryData';
@@ -20,12 +13,12 @@ import {
 import { calculateAmplifiedCoordinates } from '@/utils/ternaryCalculations';
 
 /**
- * This is the main page component for Bloc Analytics.
- * It now uses a Tab interface to allow users to switch
- * between different types of ternary plot analysis.
+ * A self-contained, reference implementation of the Ternary Plot.
+ * It uses mock data and shows a basic implementation of the data pipeline
+ * for building a chart. This serves as a stable prototype.
  */
-const BlocAnalyticsPage = () => {
-  // --- 1. Data Processing Pipeline (for Keyword Analysis) ---
+const ReferenceTernaryChart = () => {
+  // --- 1. Data Processing Pipeline ---
   const attributeConfig = { us_count_col: 'US', russia_count_col: 'Russia', middle_count_col: 'Middle' };
   const bubbleSizeConfig = { minSize: 10, maxSize: 50, scalingPower: 1.5 };
   const amplificationPower = 2;
@@ -34,7 +27,7 @@ const BlocAnalyticsPage = () => {
   const sizedData = recalculateBubbleSizes(baseAttributeData, bubbleSizeConfig);
   const amplifiedData = calculateAmplifiedCoordinates(sizedData, amplificationPower);
 
-  // --- 2. Data Transformation for Plotly (for Keyword Analysis) ---
+  // --- 2. Data Transformation for Plotly ---
   const keywordTrace: Data = {
     type: 'scatterternary',
     mode: 'markers',
@@ -53,15 +46,14 @@ const BlocAnalyticsPage = () => {
     marker: {
       size: amplifiedData.map(d => d.size_px),
       color: amplifiedData.map(d => d.TotalMentions),
-      // [REVERTED] Colorscale reverted to the brand's primary teal theme for a cohesive look.
       colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
       colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
     },
   } as any;
 
-  // --- 3. Layout Configuration for Plotly (for Keyword Analysis) ---
+  // --- 3. Layout Configuration for Plotly ---
   const keywordLayout: Partial<Layout> = {
-    title: { text: 'Relative Importance of N-grams by Voting Camp (Mock Data)' },
+    title: { text: 'Reference Ternary Plot (Mock Data)' },
     ternary: {
       sum: 1,
       aaxis: { title: { text: 'Middle-ground emphasis' }, tickfont: { size: 10 } },
@@ -76,32 +68,15 @@ const BlocAnalyticsPage = () => {
 
   // --- 4. Render the Component ---
   return (
-    <div className="p-4 sm:p-8 bg-multilat-surface min-h-screen">
-      <div className="max-w-5xl mx-auto">
-        <Tabs defaultValue="keyword_analysis" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="keyword_analysis">Keyword Analysis</TabsTrigger>
-            <TabsTrigger value="country_analysis">Country Analysis</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="keyword_analysis">
-            <div className="mt-4 p-3 text-sm text-gray-700 bg-gray-100 rounded-lg border border-gray-200">
-              <span className="font-semibold">Note:</span> For visual clarity, plotted points use amplified coordinates to better show affiliation. The hover-over pop-up always displays the original, true coordinates for data accuracy.
-            </div>
-            <div className="mt-4">
-              <TernaryPlot data={[keywordTrace]} layout={keywordLayout} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="country_analysis">
-            <div className="mt-4 p-8 text-center text-gray-500 bg-gray-50 rounded-lg border">
-              <p>The Country Position ternary plot will be implemented here.</p>
-            </div>
-          </TabsContent>
-        </Tabs>
+    <>
+      <div className="mt-4 p-3 text-sm text-yellow-700 bg-yellow-50 rounded-lg border border-yellow-200">
+        <span className="font-semibold">Prototype View:</span> This is a reference implementation using mock data. It is not connected to live data or filters.
       </div>
-    </div>
+      <div className="mt-4">
+        <TernaryPlot data={[keywordTrace]} layout={keywordLayout} />
+      </div>
+    </>
   );
 };
 
-export default BlocAnalyticsPage;
+export default ReferenceTernaryChart;
