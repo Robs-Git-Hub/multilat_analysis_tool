@@ -31,3 +31,6 @@ dist-ssr
 .env.development
 .env.test
 .env.production
+
+# Temporary files for security cleanup
+secrets-to-remove.txt
