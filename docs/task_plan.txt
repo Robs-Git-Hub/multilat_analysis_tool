@@ -51,49 +51,55 @@
 ### Task 2.3: Client-Side Analytics Logic 🔄 IN PROGRESS
 **Goal:** Implement centroid & n-gram mathematics in TypeScript.
 
-- [ ] Port ternary centroid calculations from `/legacy/` to TypeScript helpers in `/src/utils/`.
-- [ ] Create TypeScript helpers for any required n-gram statistics processing.
-- [ ] Create functions in `/src/graphs/` to generate Plotly figure objects on the client-side using fetched data.
+- [X] Port ternary centroid calculations from `/legacy/` to TypeScript helpers in `/src/utils/`.
+- [X] Create TypeScript helpers for any required n-gram statistics processing.
+- [X] Create functions in `/src/graphs/` to generate Plotly figure objects on the client-side using fetched data.
 - **Test:** Generated Plotly figure objects render correctly in `react-plotly.js`.
 
 ## PHASE 3: Frontend Integration & Charts
 
-### Task 3.1: Connect Components to Data Hooks
+### Task 3.1: Build Foundational Prototype UI
+**Goal:** Create a working, responsive prototype integrating the chart, table, and item views into a unified component.
+
+- [X] Create unified analysis view (`PrototypePage` component in `App.tsx`).
+- [X] Implement view switching with "Chart," "Table," and "Item" view tabs.
+- [X] Implement a functional filter bar with a "Precise" mode toggle.
+- [X] Refine the control panel layout for responsive and aesthetic behavior on all screen sizes.
+- [X] Ensure interactivity allows clicking from the chart/table to the item view.
+- **Test:** The prototype UI is fully functional with mock data, responsive, and ready for live data integration.
+
+### Task 3.2: Connect Components to Data Hooks
 **Goal:** Consume data from custom React Query hooks in UI components.
 
-- [ ] Connect `BlocAnalyticsPage` to the `useTernaryData` hook.
-- [ ] Connect `CommentFinderPage` to the `useCommentSearch` hook.
-- [ ] Connect `KeywordDetailsPage` to the `useKeywordDetails` hook.
+- [ ] Connect `PrototypePage` component (in `App.tsx`) to the `useTernaryData` hook.
+- [ ] Connect `Table View` (in `App.tsx`) to the `useCommentSearch` hook.
+- [ ] Connect `Item View` (in `App.tsx`) to the `useKeywordDetails` hook.
 - [ ] Implement loading skeletons and error messages for all data-driven components.
 - **Test:** UI correctly displays loading, error, and success states based on hook status.
 
-### Task 3.2: Ternary Plot Components
+### Task 3.3: Ternary Plot Components
 **Goal:** Create interactive ternary plot visualizations.
 
-- [ ] Install and configure `react-plotly.js`.
-- [ ] Create `TernaryPlot` component with responsive design.
+- [X] Install and configure `react-plotly.js`.
+- [X] Create `TernaryPlot` component (`ReferenceTernaryChart`) within a responsive page design.
 - [ ] Implement pinch-zoom for mobile (<480px).
 - [ ] Add URL state management for chart persistence.
 - **Test:** Ternary plots render correctly and maintain state on navigation.
 
-### Task 3.3: Page Components - Core Analytics
-**Goal:** Build the three main analytics pages.
+### Task 3.4: Enhance Page Views with Specific Features
+**Goal:** Add advanced functionality and exports to the existing prototype views.
 
-- [ ] Create `BlocAnalyticsPage` with two ternary tabs.
-- [ ] Create `CommentFinderPage` with search and filters.
-- [ ] Create `KeywordDetailsPage` with speaker table and CSV export.
+- [ ] Enhance `Item View` with a formatted data table and CSV export functionality.
 - [ ] Implement `SessionInsightsPage` with Word export capability.
-- **Test:** Each page functions independently and displays correct data.
+- **Test:** Each view (`Chart`, `Table`, `Item`) functions independently and displays correct data.
 
-### Task 3.4: Navigation & Routing
+### Task 3.5: Navigation & Routing
 **Goal:** Implement React Router setup per `app_flow_pages_and_roles.txt`.
 
-- [ ] Configure React Router with all defined routes.
+- [X] Configure React Router with primary application routes (`KeywordAnalysisPage`, `CountryAnalysisPage`, and the route to `PrototypePage`).
 - [ ] Create `EntryHub` page with tile menu navigation.
-- [ ] Implement "open in new tab" functionality for Keyword Details.
-- **Test:** All navigation works correctly; URL states persist where required.
-
-## PHASE 4: Content, Authentication & Admin
+- [ ] Implement "open in new tab" functionality for Item View.
+- **Test:** All navigation works correctly; URL states persist where required.## PHASE 4: Content, Authentication & Admin
 
 ### Task 4.1: Static Content Pages
 **Goal:** Create informational pages.
