@@ -25,6 +25,9 @@ dist-ssr
 
 # Environment variables and secrets
 # Never commit these files!
+# Use a more specific list instead of a broad wildcard.
 .env
-.env.*
-!/.env.example
+.env.local
+.env.development
+.env.test
+.env.production
