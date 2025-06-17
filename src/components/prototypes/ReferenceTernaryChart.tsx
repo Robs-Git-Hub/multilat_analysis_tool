@@ -8,6 +8,7 @@ import Plot from 'react-plotly.js';
 // We only need the type definition now, not the calculation functions.
 import { ItemWithSize } from '@/utils/ternaryDataProcessing'; 
 import { calculateAmplifiedCoordinates } from '@/utils/ternaryCalculations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReferenceTernaryChartProps {
   data: ItemWithSize[];
@@ -19,6 +20,9 @@ interface ReferenceTernaryChartProps {
  * It now accepts data and an onNodeClick handler to be interactive.
  */
 const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onNodeClick }) => {
+  const isMobile = useIsMobile();
+  console.log('[Verification] Is mobile view:', isMobile);
+
   // --- 1. Data Processing Pipeline ---
   const amplificationPower = 2;
   const amplifiedData = calculateAmplifiedCoordinates(data, amplificationPower);
