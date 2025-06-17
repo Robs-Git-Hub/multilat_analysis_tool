@@ -7,7 +7,6 @@ import {
   Route,
   NavLink,
 } from 'react-router-dom';
-import Fuse, { type IFuseOptions } from 'fuse.js';
 
 import KeywordAnalysisPage from './pages/KeywordAnalysisPage';
 import CountryAnalysisPage from './pages/CountryAnalysisPage';
@@ -23,8 +22,9 @@ import { DataTable, ColumnDef } from './components/shared/DataTable';
 import { FilterBar } from './components/shared/FilterBar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SearchHelp } from './components/shared/SearchHelp';
-import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox
-import { Label } from '@/components/ui/label'; // Import Label
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { performSearch } from './utils/searchUtils';
 
 type View = 'chart' | 'table' | 'item';
 
@@ -36,7 +36,7 @@ const PrototypePage = () => {
   const [view, setView] = useState<View>('chart');
   const [filterText, setFilterText] = useState('');
   const [selectedItem, setSelectedItem] = useState<ItemWithSize | null>(null);
-  const [isPrecise, setIsPrecise] = useState(false); // State for the "Precise" toggle
+  const [isPrecise, setIsPrecise] = useState(false);
 
   // --- 2. Data Processing (Memoized) ---
   const processedData = useMemo(() => {
@@ -46,36 +46,13 @@ const PrototypePage = () => {
     return recalculateBubbleSizes(baseData, bubbleSizeConfig);
   }, []);
 
-  // --- 3. Fuse.js Setup (Memoized and now DYNAMIC) ---
-  const fuse = useMemo(() => {
-    // Base options that are always active
-    const baseOptions: IFuseOptions<ItemWithSize> = {
-      keys: ['ngram', 'Category'],
-    };
-
-    // Conditionally build the final options object based on the "Precise" toggle
-    const finalOptions = isPrecise
-      ? { ...baseOptions, useExtendedSearch: true } // Precise Mode: Logical search
-      : { ...baseOptions, threshold: 0.3 };       // Normal Mode: Fuzzy search
-
-    // *** DIAGNOSTIC LOG ***
-    // Let's inspect the options being used to confirm our hypothesis.
-    console.log('Fuse.js options updated:', finalOptions);
-
-    return new Fuse(processedData, finalOptions);
-  }, [processedData, isPrecise]); // Re-create the Fuse instance when `isPrecise` changes
-
-  // --- 4. Filtering Logic (No changes needed here) ---
+  // --- 3. Filtering Logic (Refactored and Simplified) ---
   const filteredData = useMemo(() => {
-    if (!filterText) {
-      return processedData;
-    }
-    const results = fuse.search(filterText);
-    return results.map(result => result.item);
-  }, [processedData, filterText, fuse]);
+    return performSearch(processedData, filterText, isPrecise);
+  }, [processedData, filterText, isPrecise]);
 
 
-  // --- 5. Event Handlers ---
+  // --- 4. Event Handlers ---
   const handleNodeClick = (item: ItemWithSize) => {
     setSelectedItem(item);
     setView('item');
@@ -88,7 +65,7 @@ const PrototypePage = () => {
     setView(newView as View);
   }
 
-  // --- 6. View-Specific Configurations ---
+  // --- 5. View-Specific Configurations ---
   const tableColumns: ColumnDef<ItemWithSize>[] = [
     { key: 'ngram', header: 'N-gram' },
     { key: 'TotalMentions', header: 'Total Mentions' },
@@ -97,7 +74,7 @@ const PrototypePage = () => {
     { key: 'P_Middle', header: 'P(Middle)', render: (val) => (val as number).toFixed(3) },
   ];
 
-  // --- 7. Render Logic ---
+  // --- 6. Render Logic ---
   return (
     <div className="p-4 sm:p-8 bg-multilat-surface min-h-screen">
       <div className="max-w-5xl mx-auto">
@@ -117,7 +94,7 @@ const PrototypePage = () => {
               <FilterBar 
                 filterText={filterText} 
                 onFilterTextChange={setFilterText} 
-                placeholder={isPrecise ? "Use !, ', and space for logic..." : "Fuzzy search by n-gram..."}
+                placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."}
               />
               <div className="flex items-center space-x-2">
                 <Checkbox id="precise-toggle" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />

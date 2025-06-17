@@ -9,10 +9,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from '@/components/ui/separator'; // For a clean visual break
+import { Separator } from '@/components/ui/separator';
 
 /**
  * A reusable popover component that displays help text for advanced search syntax.
+ * This content has been updated to reflect the proven capabilities of the search library.
  */
 export const SearchHelp = () => (
   <Popover>
@@ -30,30 +31,30 @@ export const SearchHelp = () => (
 
         <div className="text-sm">
           <p className="font-semibold">Normal Search</p>
-          <p className="text-muted-foreground">Returns close matches to the search term.</p>
+          <p className="text-muted-foreground">Returns close matches (fuzzy search).</p>
         </div>
 
         <Separator />
 
         <div className="text-sm">
           <p className="font-semibold">Precise Search</p>
-          <p className="text-muted-foreground mb-2">Turns off close matching and activates the controls below.</p>
+          <p className="text-muted-foreground mb-2">Turns off fuzzy matching and enables the logical operators below.</p>
           <ul className="space-y-2">
             <li className="flex items-center">
-              <code className="font-mono bg-gray-100 p-1 rounded">word1 word2</code>
-              <span className="ml-2">Finds `word1` OR `word2`.</span>
+              <code className="font-mono bg-gray-100 p-1 rounded">'report 'budget'</code>
+              <span className="ml-2">Finds items with `report` AND `budget`.</span>
             </li>
             <li className="flex items-center">
-              <code className="font-mono bg-gray-100 p-1 rounded">"exact phrase"</code>
+              <code className="font-mono bg-gray-100 p-1 rounded">report | analysis</code>
+              <span className="ml-2">Finds items with `report` OR `analysis`.</span>
+            </li>
+            <li className="flex items-center">
+              <code className="font-mono bg-gray-100 p-1 rounded">'report !budget'</code>
+              <span className="ml-2">Finds `report` but NOT `budget`.</span>
+            </li>
+            <li className="flex items-center">
+              <code className="font-mono bg-gray-100 p-1 rounded">"annual report"</code>
               <span className="ml-2">Matches the exact phrase.</span>
-            </li>
-            <li className="flex items-center">
-              <code className="font-mono bg-gray-100 p-1 rounded">!word</code>
-              <span className="ml-2">Excludes items with `word`.</span>
-            </li>
-            <li className="flex items-center">
-              <code className="font-mono bg-gray-100 p-1 rounded">'word1 'word2</code>
-              <span className="ml-2">Finds `word1` AND `word2`.</span>
             </li>
           </ul>
         </div>
