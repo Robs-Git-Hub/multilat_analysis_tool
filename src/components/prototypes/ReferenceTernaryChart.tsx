@@ -34,7 +34,6 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   // --- 2. Responsive Layout & Marker Configuration ---
 
-  // Base configuration shared by both desktop and mobile layouts.
   const baseLayoutConfig: Partial<Layout> = {
     paper_bgcolor: '#f6f9f9',
     plot_bgcolor: '#f6f9f9',
@@ -45,35 +44,15 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   const desktopTernaryConfig = {
     sum: 1,
-    aaxis: {
-      title: {
-        text: 'Middle-ground<br>share',
-        // Standoff pushes the title away from the plot. Applied to both desktop
-        // and mobile to prevent the title from overlapping the chart grid.
-        standoff: 25,
-      },
-      tickfont: { size: 10 },
-    },
+    aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 10 } },
     baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 10 } },
     caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 10 } },
   };
 
-  /**
-   * Mobile-specific axis configuration. This is the core of the fix for label overlap.
-   * It combines three techniques:
-   * 1.  **Standoff:** Pushes the top label ('aaxis') up to prevent it from overlapping the plot.
-   * 2.  **Word Wrapping:** Uses more <br> tags in side labels to make them more compact.
-   * 3.  **Font Size:** Reduces the font size to save space.
-   */
   const mobileTernaryConfig = {
     sum: 1,
     aaxis: {
-      title: {
-        text: 'Middle-ground<br>share',
-        // Standoff is increased and applied globally to prevent title overlap.
-        standoff: 25,
-        font: { size: 8 },
-      },
+      title: { text: 'Middle-ground<br>share', font: { size: 8 } },
       tickfont: { size: 8 },
     },
     baxis: {
@@ -93,7 +72,9 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     title: { text: 'Reference Ternary Plot (Mock Data)' },
     ternary: desktopTernaryConfig,
     height: 700,
-    margin: { l: 50, r: 50, b: 50, t: 100 },
+    // The top margin is the correct way to create space for the axis title in a ternary plot.
+    // Increased to prevent the top axis label from overlapping the plot grid.
+    margin: { l: 50, r: 50, b: 50, t: 130 },
   };
 
   const mobileLayout: Partial<Layout> = {
@@ -105,7 +86,9 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
       l: 40,
       r: 40,
       b: 40,
-      t: 20,
+      // Increased top margin to give the axis title sufficient space.
+      // The margin on the custom h3 title has been removed to compensate.
+      t: 50,
     },
   };
 
@@ -142,7 +125,9 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   if (isMobile) {
     return (
       <div className="flex flex-col items-center w-full">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        {/* The bottom margin (mb-2) has been removed from this title. */}
+        {/* All vertical spacing is now controlled by the Plotly layout's top margin. */}
+        <h3 className="text-lg font-semibold text-gray-800">
           Reference Ternary Plot
         </h3>
         <Plot
