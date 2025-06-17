@@ -58,6 +58,10 @@ const PrototypePage = () => {
       ? { ...baseOptions, useExtendedSearch: true } // Precise Mode: Logical search
       : { ...baseOptions, threshold: 0.3 };       // Normal Mode: Fuzzy search
 
+    // *** DIAGNOSTIC LOG ***
+    // Let's inspect the options being used to confirm our hypothesis.
+    console.log('Fuse.js options updated:', finalOptions);
+
     return new Fuse(processedData, finalOptions);
   }, [processedData, isPrecise]); // Re-create the Fuse instance when `isPrecise` changes
 
