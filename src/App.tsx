@@ -86,8 +86,8 @@ const PrototypePage = () => {
 
         <Tabs value={view} onValueChange={handleViewChange} className="w-full">
           {/* --- START: FINAL RESPONSIVE CONTROL PANEL LAYOUT --- */}
-          {/* On mobile: flex-col. On desktop: grid with content-sized columns, aligned to the end. */}
-          <div className="flex flex-col md:grid md:grid-cols-[auto_auto] md:justify-end md:items-center md:gap-4 mb-4">
+          {/* On mobile: flex-col. On desktop: grid with content-sized columns, aligned to the start. */}
+          <div className="flex flex-col md:grid md:grid-cols-[auto_auto] md:justify-start md:items-center md:gap-4 mb-4">
             
             <TabsList>
               <TabsTrigger value="chart">Chart View</TabsTrigger>
