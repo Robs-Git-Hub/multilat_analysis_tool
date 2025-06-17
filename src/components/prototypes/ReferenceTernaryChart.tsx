@@ -18,7 +18,8 @@ interface ReferenceTernaryChartProps {
 /**
  * A self-contained, reference implementation of the Ternary Plot.
  * It now uses a custom React component for the title and colorbar on mobile
- * to ensure a robust and responsive layout.
+ * and includes a robust, well-documented axis configuration to prevent
+ * label clipping and overlap on smaller screens.
  */
 const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onNodeClick }) => {
   const isMobile = useIsMobile();
@@ -27,47 +28,84 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   const amplificationPower = 2;
   const amplifiedData = calculateAmplifiedCoordinates(data, amplificationPower);
 
-  // Calculate min/max for our custom colorbar
   const mentionValues = amplifiedData.map(d => d.TotalMentions);
   const minMentions = Math.min(...mentionValues);
   const maxMentions = Math.max(...mentionValues);
 
   // --- 2. Responsive Layout & Marker Configuration ---
+
+  // Base configuration shared by both desktop and mobile layouts.
   const baseLayoutConfig: Partial<Layout> = {
     paper_bgcolor: '#f6f9f9',
     plot_bgcolor: '#f6f9f9',
     font: { color: '#1a1d1d' },
-    ternary: {
-      sum: 1,
-      aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: isMobile ? 8 : 10 } },
-      baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: isMobile ? 8 : 10 } },
-      caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: isMobile ? 8 : 10 } },
+  };
+
+  // --- Axis Configurations: A clear pattern for responsive labels ---
+
+  const desktopTernaryConfig = {
+    sum: 1,
+    aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 10 } },
+    baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 10 } },
+    caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 10 } },
+  };
+
+  /**
+   * Mobile-specific axis configuration. This is the core of the fix for label overlap.
+   * It combines three techniques:
+   * 1.  **Standoff:** Pushes the top label ('aaxis') up to prevent it from overlapping the plot.
+   * 2.  **Word Wrapping:** Uses more <br> tags in side labels to make them more compact.
+   * 3.  **Font Size:** Reduces the font size to save space.
+   */
+  const mobileTernaryConfig = {
+    sum: 1,
+    aaxis: {
+      title: {
+        text: 'Middle-ground<br>share',
+        // Pushes the top title upwards by 10px to prevent overlap with the plot triangle.
+        standoff: 10,
+        font: { size: 8 },
+      },
+      tickfont: { size: 8 },
+    },
+    baxis: {
+      // Uses more aggressive word wrapping for long labels on narrow screens.
+      title: { text: 'Russia-like-<br>voting<br>share', font: { size: 8 } },
+      tickfont: { size: 8 },
+    },
+    caxis: {
+      // Uses more aggressive word wrapping for long labels on narrow screens.
+      title: { text: 'US-like-<br>voting<br>share', font: { size: 8 } },
+      tickfont: { size: 8 },
     },
   };
+
+  // --- Final Layout Objects ---
 
   const desktopLayout: Partial<Layout> = {
     ...baseLayoutConfig,
     title: { text: 'Reference Ternary Plot (Mock Data)' },
+    ternary: desktopTernaryConfig,
     height: 700,
     margin: { l: 50, r: 50, b: 50, t: 100 },
   };
 
-  // On mobile, we remove the title and let our custom components handle it.
-  // The height is reduced to remove excess whitespace above the plot.
   const mobileLayout: Partial<Layout> = {
     ...baseLayoutConfig,
-    title: { text: '' }, // Disable Plotly's title
-    height: 450, // REDUCED: This removes the large gap above the chart.
-    margin: { l: 20, r: 20, b: 40, t: 20 },
+    title: { text: '' }, // Custom title is rendered in React for mobile
+    ternary: mobileTernaryConfig,
+    height: 450,
+    margin: {
+      // Increased left/right margins to give the compact labels enough room to render
+      // without being clipped by the edge of the screen.
+      l: 40,
+      r: 40,
+      b: 40,
+      t: 20,
+    },
   };
 
   const colorscale: [number, string][] = [[0, '#e0f2f1'], [1, '#437e84']];
-
-  const baseMarkerConfig = {
-    size: amplifiedData.map(d => d.size_px),
-    color: amplifiedData.map(d => d.TotalMentions),
-    colorscale: colorscale,
-  };
 
   // --- 3. Data Transformation for Plotly ---
   const trace: Data = {
@@ -80,7 +118,9 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     customdata: amplifiedData,
     hovertemplate: "<b>Ngram:</b> %{text}<br>" + "P_US (Original): %{customdata.P_US:.3f}<br>" + "P_Russia (Original): %{customdata.P_Russia:.3f}<br>" + "P_Middle (Original): %{customdata.P_Middle:.3f}<br>" + "TotalMentions: %{customdata.TotalMentions}<br>" + "<extra></extra>",
     marker: {
-      ...baseMarkerConfig,
+      size: amplifiedData.map(d => d.size_px),
+      color: amplifiedData.map(d => d.TotalMentions),
+      colorscale: colorscale,
       showscale: !isMobile,
       colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
     },
@@ -95,7 +135,6 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   };
 
   // --- 4. Render the Component ---
-  // On mobile, we wrap the chart with our custom title and colorbar.
   if (isMobile) {
     return (
       <div className="flex flex-col items-center w-full">
@@ -106,12 +145,10 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
           data={[trace]}
           layout={mobileLayout}
           config={{ responsive: true, displaylogo: false }}
-          // Let the layout's height property control the size
           style={{ width: '100%' }}
           useResizeHandler={true}
           onClick={handleClick}
         />
-        {/* MOVED: The colorbar is now rendered below the plot */}
         <div className="w-full mt-4">
           <HorizontalColorbar
             title="Total Mentions"
@@ -124,7 +161,6 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     );
   }
 
-  // On desktop, we render the chart as before.
   return (
     <Plot
       data={[trace]}
