@@ -44,7 +44,15 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
 
   const desktopTernaryConfig = {
     sum: 1,
-    aaxis: { title: { text: 'Middle-ground<br>share' }, tickfont: { size: 10 } },
+    aaxis: {
+      title: {
+        // WORKAROUND: Add a trailing <br> tag to the title text. This forces
+        // an extra line below the label, effectively increasing the top margin
+        // and preventing the title from overlapping the plot grid.
+        text: 'Middle-ground share<br>',
+      },
+      tickfont: { size: 10 },
+    },
     baxis: { title: { text: 'Russia-like-voting<br>share' }, tickfont: { size: 10 } },
     caxis: { title: { text: 'US-like-voting<br>share' }, tickfont: { size: 10 } },
   };
@@ -52,7 +60,11 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   const mobileTernaryConfig = {
     sum: 1,
     aaxis: {
-      title: { text: 'Middle-ground<br>share', font: { size: 8 } },
+      title: {
+        // Apply the same workaround for mobile to ensure consistency.
+        text: 'Middle-ground share<br>',
+        font: { size: 8 },
+      },
       tickfont: { size: 8 },
     },
     baxis: {
@@ -72,9 +84,7 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     title: { text: 'Reference Ternary Plot (Mock Data)' },
     ternary: desktopTernaryConfig,
     height: 700,
-    // The top margin is the correct way to create space for the axis title in a ternary plot.
-    // Increased to prevent the top axis label from overlapping the plot grid.
-    margin: { l: 50, r: 50, b: 50, t: 130 },
+    margin: { l: 50, r: 50, b: 50, t: 100 }, // Reverted to original value
   };
 
   const mobileLayout: Partial<Layout> = {
@@ -86,9 +96,7 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
       l: 40,
       r: 40,
       b: 40,
-      // Increased top margin to give the axis title sufficient space.
-      // The margin on the custom h3 title has been removed to compensate.
-      t: 50,
+      t: 20, // Reverted to original value
     },
   };
 
@@ -125,9 +133,8 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
   if (isMobile) {
     return (
       <div className="flex flex-col items-center w-full">
-        {/* The bottom margin (mb-2) has been removed from this title. */}
-        {/* All vertical spacing is now controlled by the Plotly layout's top margin. */}
-        <h3 className="text-lg font-semibold text-gray-800">
+        {/* Re-added bottom margin to the title as part of the reversion. */}
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">
           Reference Ternary Plot
         </h3>
         <Plot
