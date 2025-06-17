@@ -1,7 +1,24 @@
 
-// Test setup file
+// src/__tests__/setup.ts
 import '@testing-library/jest-dom';
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from '../mocks/server'; // Import the mock server
 import { vi } from 'vitest';
+
+// --- MSW SERVER LIFECYCLE ---
+// This block sets up and tears down the mock server for our tests.
+
+// 1. Start the server before any tests run.
+beforeAll(() => server.listen());
+
+// 2. Reset any runtime request handlers we may add during tests.
+// This ensures that tests don't interfere with each other.
+afterEach(() => server.resetHandlers());
+
+// 3. Close the server after all tests have finished.
+afterAll(() => server.close());
+
+// --- EXISTING GLOBAL MOCKS ---
 
 // Mock console methods to reduce noise in tests
 global.console = {
