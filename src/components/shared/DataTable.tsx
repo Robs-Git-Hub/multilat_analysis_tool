@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -36,22 +37,48 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     }
   };
 
-  // Calculate dynamic height based on content for mobile - removed unused 'item' parameter
-  const calculateMobileCardHeight = (columns: ColumnDef<T>[]) => {
-    const baseHeight = 80; // Header height
-    const rowHeight = 40; // Each data row height (increased for better spacing)
-    const padding = 32; // Card padding
-    const contentRows = columns.length > 1 ? columns.length - 1 : 0; // Exclude title column
-    return baseHeight + (contentRows * rowHeight) + padding;
+  // Improved dynamic height calculation for mobile cards
+  const calculateMobileCardHeight = (item: T, columns: ColumnDef<T>[]) => {
+    const headerHeight = 60; // Card header height
+    const padding = 24; // Card padding (top + bottom)
+    const contentPadding = 16; // Content area padding
+    
+    if (columns.length <= 1) {
+      return headerHeight + padding;
+    }
+    
+    const contentColumns = columns.slice(1);
+    let totalContentHeight = 0;
+    
+    contentColumns.forEach((column) => {
+      const value = item[column.key];
+      const displayValue = column.render ? column.render(value) : String(value);
+      const valueLength = String(displayValue).length;
+      
+      // Base height for each row
+      let rowHeight = 32;
+      
+      // Add extra height for longer content (rough estimation for text wrapping)
+      if (valueLength > 30) {
+        const extraLines = Math.ceil(valueLength / 30) - 1;
+        rowHeight += extraLines * 20;
+      }
+      
+      // Add spacing between rows
+      totalContentHeight += rowHeight + 4;
+    });
+    
+    return headerHeight + totalContentHeight + padding + contentPadding;
   };
 
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (_) => {
+    estimateSize: (index) => {
       if (isMobile) {
-        // Calculate dynamic height based on actual content
-        return calculateMobileCardHeight(columns);
+        // Calculate dynamic height based on actual item content
+        const item = data[index];
+        return calculateMobileCardHeight(item, columns);
       }
       return 53; // Desktop table row height
     },
@@ -135,7 +162,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
             return (
               <div
                 key={item.id}
-                className="absolute top-0 left-0 w-full overflow-hidden"
+                className="absolute top-0 left-0 w-full"
                 style={{
                   height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
@@ -144,18 +171,18 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                 <Card
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    "h-full flex flex-col mb-2 overflow-hidden",
+                    "h-full flex flex-col mb-2",
                     onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
                   )}
                 >
                   <CardHeader className="p-3 pb-2 flex-shrink-0">
                     {titleColumn && (
-                      <CardTitle className="text-base font-semibold text-teal-700 truncate">
+                      <CardTitle className="text-base font-semibold text-teal-700 break-words">
                         {String(item[titleColumn.key])}
                       </CardTitle>
                     )}
                   </CardHeader>
-                  <CardContent className="p-3 pt-1 flex-grow overflow-y-auto">
+                  <CardContent className="p-3 pt-1 flex-grow">
                     <div className="space-y-3 text-sm">
                       {contentColumns.map((column, index) => {
                         const value = item[column.key];
@@ -165,14 +192,14 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
                           <div 
                             key={String(column.key)} 
                             className={cn(
-                              "flex justify-between items-start gap-2 py-2",
+                              "flex flex-col gap-1 py-2",
                               index > 0 && "border-t border-gray-100"
                             )}
                           >
-                            <span className="font-medium text-muted-foreground flex-shrink-0 min-w-0">
-                              {column.header}:
+                            <span className="font-medium text-muted-foreground text-xs">
+                              {column.header}
                             </span>
-                            <span className="text-right font-medium text-gray-900 min-w-0 break-words">
+                            <span className="font-medium text-gray-900 break-words">
                               {displayValue}
                             </span>
                           </div>
