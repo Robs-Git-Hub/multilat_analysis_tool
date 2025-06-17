@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from 'react';
@@ -37,51 +38,11 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     }
   };
 
-  // Improved dynamic height calculation for mobile cards
-  const calculateMobileCardHeight = (item: T, columns: ColumnDef<T>[]) => {
-    const headerHeight = 60; // Card header height
-    const padding = 24; // Card padding (top + bottom)
-    const contentPadding = 16; // Content area padding
-    
-    if (columns.length <= 1) {
-      return headerHeight + padding;
-    }
-    
-    const contentColumns = columns.slice(1);
-    let totalContentHeight = 0;
-    
-    contentColumns.forEach((column) => {
-      const value = item[column.key];
-      const displayValue = column.render ? column.render(value) : String(value);
-      const valueLength = String(displayValue).length;
-      
-      // Base height for each row
-      let rowHeight = 32;
-      
-      // Add extra height for longer content (rough estimation for text wrapping)
-      if (valueLength > 30) {
-        const extraLines = Math.ceil(valueLength / 30) - 1;
-        rowHeight += extraLines * 20;
-      }
-      
-      // Add spacing between rows
-      totalContentHeight += rowHeight + 4;
-    });
-    
-    return headerHeight + totalContentHeight + padding + contentPadding;
-  };
-
+  // Desktop virtualization only
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => {
-      if (isMobile) {
-        // Calculate dynamic height based on actual item content
-        const item = data[index];
-        return calculateMobileCardHeight(item, columns);
-      }
-      return 53; // Desktop table row height
-    },
+    estimateSize: () => 53, // Desktop table row height
     overscan: 5,
   });
 
@@ -126,7 +87,7 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     );
   }
 
-  // --- Mobile Card View (Virtualized) ---
+  // --- Mobile Card View (Non-Virtualized for better content display) ---
   if (isMobile) {
     const titleColumn = columns[0];
     const contentColumns = columns.length > 1 ? columns.slice(1) : [];
@@ -138,80 +99,69 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     });
 
     return (
-      <div
-        ref={parentRef}
-        className="mt-4 overflow-y-auto max-h-[70vh] px-2"
-      >
-        <div
-          className="w-full relative"
-          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-        >
-          {virtualItems.map((virtualItem) => {
-            const item = data[virtualItem.index];
-            
-            // Debug log for each card
-            console.log(`Card ${virtualItem.index}:`, {
-              item,
-              titleValue: titleColumn ? item[titleColumn.key] : 'No title',
-              contentData: contentColumns.map(col => ({ 
-                header: col.header, 
-                value: item[col.key] 
-              }))
-            });
+      <div className="mt-4 overflow-y-auto max-h-[70vh] px-2 space-y-3">
+        {data.map((item, index) => {
+          // Debug log for each card
+          console.log(`Card ${index}:`, {
+            item,
+            titleValue: titleColumn ? item[titleColumn.key] : 'No title',
+            contentData: contentColumns.map(col => ({ 
+              header: col.header, 
+              value: item[col.key] 
+            }))
+          });
 
-            return (
-              <div
-                key={item.id}
-                className="absolute top-0 left-0 w-full"
-                style={{
-                  height: `${virtualItem.size}px`,
-                  transform: `translateY(${virtualItem.start}px)`,
-                }}
-              >
-                <Card
-                  onClick={() => handleItemClick(item)}
-                  className={cn(
-                    "h-full flex flex-col mb-2",
-                    onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
-                  )}
-                >
-                  <CardHeader className="p-3 pb-2 flex-shrink-0">
-                    {titleColumn && (
-                      <CardTitle className="text-base font-semibold text-teal-700 break-words">
-                        {String(item[titleColumn.key])}
-                      </CardTitle>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-3 pt-1 flex-grow">
-                    <div className="space-y-3 text-sm">
-                      {contentColumns.map((column, index) => {
-                        const value = item[column.key];
-                        const displayValue = column.render ? column.render(value) : String(value);
-                        
-                        return (
-                          <div 
-                            key={String(column.key)} 
-                            className={cn(
-                              "flex flex-col gap-1 py-2",
-                              index > 0 && "border-t border-gray-100"
-                            )}
-                          >
-                            <span className="font-medium text-muted-foreground text-xs">
-                              {column.header}
-                            </span>
-                            <span className="font-medium text-gray-900 break-words">
-                              {displayValue}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
-        </div>
+          return (
+            <Card
+              key={item.id}
+              onClick={() => handleItemClick(item)}
+              className={cn(
+                "flex flex-col",
+                onRowClick && "cursor-pointer transition-shadow hover:shadow-md"
+              )}
+            >
+              <CardHeader className="p-3 pb-2">
+                {titleColumn && (
+                  <CardTitle className="text-base font-semibold text-teal-700 break-words">
+                    {String(item[titleColumn.key])}
+                  </CardTitle>
+                )}
+              </CardHeader>
+              <CardContent className="p-3 pt-1">
+                <div className="space-y-3 text-sm">
+                  {contentColumns.map((column, columnIndex) => {
+                    const value = item[column.key];
+                    const displayValue = column.render ? column.render(value) : String(value);
+                    
+                    console.log(`Card ${index}, Column ${columnIndex}:`, {
+                      columnKey: column.key,
+                      columnHeader: column.header,
+                      rawValue: value,
+                      displayValue
+                    });
+                    
+                    return (
+                      <div 
+                        key={String(column.key)} 
+                        className={cn(
+                          "flex flex-col gap-1 py-2",
+                          columnIndex > 0 && "border-t border-gray-100"
+                        )}
+                      >
+                        <span className="font-medium text-muted-foreground text-xs">
+                          {column.header}
+                        </span>
+                        <span className="font-medium text-gray-900 break-words">
+                          {displayValue}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     );
   }
@@ -267,3 +217,4 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
     </div>
   );
 }
+
