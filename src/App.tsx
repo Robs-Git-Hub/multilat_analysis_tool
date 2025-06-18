@@ -3,7 +3,6 @@
 
 import { useState, useMemo } from 'react';
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   NavLink,
@@ -189,7 +188,7 @@ const AppNavigation = () => (
 
 const App = () => {
   return (
-    <Router>
+    <>
       <AppNavigation />
       <Routes>
         <Route path="/keyword-analysis" element={<KeywordAnalysisPage />} />
@@ -200,7 +199,7 @@ const App = () => {
         {/* --- END: ADDED ROUTE --- */}
         <Route path="/" element={<KeywordAnalysisPage />} />
       </Routes>
-    </Router>
+    </>
   );
 };
 
