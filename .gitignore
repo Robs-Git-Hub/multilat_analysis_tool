@@ -34,3 +34,6 @@ dist-ssr
 
 # Temporary files for security cleanup
 secrets-to-remove.txt
+
+# Supabase local development files
+supabase/.temp/
