@@ -1,5 +1,6 @@
 
-// src/App.tsx
+// File: src/App.tsx
+
 import { useState, useMemo } from 'react';
 import {
   BrowserRouter as Router,
@@ -10,6 +11,7 @@ import {
 
 import KeywordAnalysisPage from './pages/KeywordAnalysisPage';
 import CountryAnalysisPage from './pages/CountryAnalysisPage';
+import { DataConnectionTestPage } from './pages/DataConnectionTestPage'; // <-- ADDED IMPORT
 import ReferenceTernaryChart from './components/prototypes/ReferenceTernaryChart';
 import { MOCK_RAW_DATA } from './graphs/mockTernaryData';
 import {
@@ -173,6 +175,12 @@ const AppNavigation = () => (
           <NavLink to="/prototypes/ternary-chart" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
             Prototype Page
           </NavLink>
+          {/* --- START: ADDED LINK --- */}
+          <div className="border-l border-gray-300 h-6" />
+          <NavLink to="/data-test" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-red-100 text-red-800 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
+            DB Connection Test
+          </NavLink>
+          {/* --- END: ADDED LINK --- */}
         </div>
       </div>
     </div>
@@ -187,6 +195,9 @@ const App = () => {
         <Route path="/keyword-analysis" element={<KeywordAnalysisPage />} />
         <Route path="/country-analysis" element={<CountryAnalysisPage />} />
         <Route path="/prototypes/ternary-chart" element={<PrototypePage />} />
+        {/* --- START: ADDED ROUTE --- */}
+        <Route path="/data-test" element={<DataConnectionTestPage />} />
+        {/* --- END: ADDED ROUTE --- */}
         <Route path="/" element={<KeywordAnalysisPage />} />
       </Routes>
     </Router>
