@@ -9,43 +9,55 @@ export type TernaryDataItem = ItemWithTernaryAttributes;
 
 /**
  * Fetches and processes ngram statistics for the ternary plot.
- *
- * This hook performs the following steps:
- * 1. Fetches the raw count data (`count_A`, `count_G`, `count_BCDE`) for all ngrams from Supabase.
- * 2. Processes this raw data using the `calculateBaseTernaryAttributes` utility function.
- *    This function calculates the normalized coordinates (P_US, P_Russia, P_Middle) and TotalMentions
- *    for each ngram, based on the distribution across the entire dataset.
- * 3. Returns the processed data, ready for visualization.
  */
 export const useTernaryData = () => {
   return useQuery<TernaryDataItem[], Error>({
     queryKey: ['ternaryData'],
     queryFn: async () => {
-      // 1. Fetch only the raw columns we need for the calculation.
+      console.log('[DEBUG] Step 0: Starting fetch in useTernaryData...');
+      
       const { data, error } = await supabase
         .from('oewg_ngram_statistics')
         .select('ngram, count_A, count_G, count_BCDE')
-        // FIX: Increase the query limit to fetch all rows, not just the default 1000.
         .limit(5000);
+
+      // --- DIAGNOSTIC LOG #1: Inspect the raw response from Supabase ---
+      console.log('[DEBUG] Step 1: Raw Supabase Response Received');
+      console.log(`[DEBUG]   - Error object:`, error);
+      console.log(`[DEBUG]   - Data object received:`, data);
+      console.log(`[DEBUG]   - Number of rows received: ${data?.length}`);
+      // Let's inspect the last item to see if it's still an 'A' word
+      if (data && data.length > 0) {
+        console.log(`[DEBUG]   - Last item ngram: "${data[data.length - 1].ngram}"`);
+      }
+      // --- End of Diagnostic Log #1 ---
 
       if (error) {
         console.error("Error fetching ternary data:", error);
         throw new Error(error.message);
       }
+      
+      // It's possible for `data` to be null even without an error.
+      if (!data) {
+        console.warn("[DEBUG] Data from Supabase is null or undefined, returning empty array.");
+        return [];
+      }
 
-      // The `calculateBaseTernaryAttributes` function expects each item to have an `id`.
-      // We map `ngram` to `id` to conform to the utility's contract.
       const rawDataWithIds = data.map(item => ({
         ...item,
         id: item.ngram,
       }));
 
-      // 2. Process the raw data to calculate ternary attributes.
       const processedData = calculateBaseTernaryAttributes(rawDataWithIds, {
         us_count_col: 'count_A',
         russia_count_col: 'count_G',
         middle_count_col: 'count_BCDE',
       });
+      
+      // --- DIAGNOSTIC LOG #2: Inspect the final processed data ---
+      console.log('[DEBUG] Step 2: Data after processing');
+      console.log(`[DEBUG]   - Number of rows after processing: ${processedData.length}`);
+      // --- End of Diagnostic Log #2 ---
 
       return processedData;
     },
