@@ -9,7 +9,8 @@ export type TernaryDataItem = ItemWithTernaryAttributes;
 
 /**
  * A generic, configurable hook for fetching and processing data for ternary charts.
- * It accepts a configuration object that specifies which table and columns to use.
+ * It accepts a configuration object that specifies which table and columns to use,
+ * and now includes pagination to fetch all rows.
  *
  * @param {TernaryChartConfig} config - The configuration object for the data source.
  */
@@ -23,24 +24,38 @@ export const useConfigurableTernaryData = (config: TernaryChartConfig) => {
         config.russiaCountCol,
         config.middleCountCol,
       ].join(',');
+      
+      const PAGE_SIZE = 1000;
+      let allData: any[] = [];
+      let page = 0;
+      let keepFetching = true;
 
-      // THE FIX: Use a type assertion `as any` to assure TypeScript that
-      // the `config.table` string is a valid table name. This resolves the
-      // strict type-checking error from the Supabase client.
-      const { data, error } = await supabase
-        .from(config.table as any) 
-        .select(columnsToFetch);
+      while (keepFetching) {
+        const { from, to } = { from: page * PAGE_SIZE, to: (page + 1) * PAGE_SIZE - 1 };
 
-      if (error) {
-        console.error(`Error fetching data from ${config.table}:`, error);
-        throw new Error(error.message);
+        const { data, error } = await supabase
+          .from(config.table as any)
+          .select(columnsToFetch)
+          .range(from, to);
+
+        if (error) {
+          console.error(`Error fetching paginated data from ${config.table}:`, error);
+          throw new Error(error.message);
+        }
+
+        if (data && data.length > 0) {
+          allData.push(...data);
+          if (data.length < PAGE_SIZE) {
+            keepFetching = false;
+          } else {
+            page++;
+          }
+        } else {
+          keepFetching = false;
+        }
       }
 
-      if (!data) {
-        return [];
-      }
-
-      const rawDataWithIds = data.map((item: any) => ({ // Add :any here to resolve follow-on errors
+      const rawDataWithIds = allData.map((item: any) => ({
         ...item,
         id: item[config.idCol],
       }));

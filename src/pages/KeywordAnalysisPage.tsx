@@ -42,9 +42,8 @@ const KeywordAnalysisPage = () => {
     });
   }, [rawData, chartConfig, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
   
-  // --- Create the count text for display ---
   const countText = useMemo(() => {
-    if (isLoading || !rawData) return null; // Don't show text while loading
+    if (isLoading || !rawData) return null;
     if (isError) return "Data could not be loaded.";
 
     const totalCount = rawData.length;
@@ -133,13 +132,13 @@ const KeywordAnalysisPage = () => {
             <CardHeader>
               <CardTitle>Share of Keyword Usage by Group</CardTitle>
             </CardHeader>
-            <CardContent>
-              {/* --- Display the count of items --- */}
+            {/* THE FIX: Add a static height to the chart container to prevent resizing */}
+            <CardContent className="h-[450px] lg:h-[700px]">
               <p className="mb-4 text-center text-sm text-gray-600 italic">
                 {countText}
               </p>
 
-              {isLoading && (<div className="w-full h-[450px] lg:h-[700px]"><Skeleton className="w-full h-full" /></div>)}
+              {isLoading && (<div className="w-full h-full"><Skeleton className="w-full h-full" /></div>)}
               {isError && (<div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> Failed to load data.</p><p className="text-sm">{error?.message}</p></div>)}
               {!isLoading && !isError && (<TernaryPlot data={plotData} layout={plotLayout} />)}
             </CardContent>
