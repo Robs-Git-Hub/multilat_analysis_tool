@@ -16,6 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { HorizontalColorbar } from '@/components/prototypes/HorizontalColorbar';
+
+// Define colorscale once to be reused by Plotly and the custom colorbar
+const TERNARY_COLORSACLE: [number, string][] = [[0, '#e0f2f1'], [1, '#437e84']];
 
 const KeywordAnalysisPage = () => {
   const isMobile = useIsMobile();
@@ -42,15 +47,22 @@ const KeywordAnalysisPage = () => {
     });
   }, [rawData, chartConfig, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
   
-  const countText = useMemo(() => {
-    if (isLoading || !rawData) return null;
-    if (isError) return "Data could not be loaded.";
+  const { countText, mentionStats } = useMemo(() => {
+    if (isLoading || !rawData) return { countText: null, mentionStats: { min: 0, max: 0 } };
+    if (isError) return { countText: "Data could not be loaded.", mentionStats: { min: 0, max: 0 }};
 
     const totalCount = rawData.length;
     const displayedCount = processedData.length;
     const searchActive = searchTerm.trim() !== '';
+    const text = `Displaying ${displayedCount} of ${totalCount} total items${searchActive ? ' (filtered by search)' : ''}.`;
 
-    return `Displaying ${displayedCount} of ${totalCount} total items${searchActive ? ' (filtered by search)' : ''}.`;
+    const mentionValues = processedData.map(d => d.TotalMentions);
+    const stats = {
+      min: Math.min(...mentionValues),
+      max: Math.max(...mentionValues),
+    };
+
+    return { countText: text, mentionStats: stats };
   }, [isLoading, isError, rawData, processedData, searchTerm]);
 
 
@@ -72,8 +84,9 @@ const KeywordAnalysisPage = () => {
       plot_bgcolor: 'transparent',
       font: { color: '#1a1d1d' },
       ternary: isMobile ? mobileTernaryConfig : desktopTernaryConfig,
-      height: isMobile ? 450 : 700,
-      margin: isMobile ? { l: 40, r: 40, b: 40, t: 20 } : { l: 50, r: 50, b: 50, t: 50 },
+      height: isMobile ? 450 : 750,
+      // Use margins from prototype to ensure labels are not clipped
+      margin: isMobile ? { l: 40, r: 40, b: 40, t: 20 } : { l: 50, r: 50, b: 80, t: 50 },
     };
   }, [isMobile]);
 
@@ -92,8 +105,8 @@ const KeywordAnalysisPage = () => {
       marker: {
         size: processedData.map(d => d.size_px),
         color: processedData.map(d => d.TotalMentions),
-        colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
-        showscale: !isMobile,
+        colorscale: TERNARY_COLORSACLE,
+        showscale: !isMobile, // Hide default legend on mobile
         colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
       },
     } as any;
@@ -102,48 +115,85 @@ const KeywordAnalysisPage = () => {
 
   return (
     <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Controls</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="search">Search Ngram</Label>
-                <Input id="search" placeholder="e.g. human rights" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Node Size Range (px)</Label>
-                <div className="flex items-center gap-4">
-                  <Input type="number" value={minNodeSize} onChange={(e) => setMinNodeSize(Number(e.target.value))} className="w-1/2" aria-label="Minimum node size" />
-                  <Input type="number" value={maxNodeSize} onChange={(e) => setMaxNodeSize(Number(e.target.value))} className="w-1/2" aria-label="Maximum node size" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
-                <Slider id="scaling-power" min={0.1} max={5} step={0.1} value={[scalingPower]} onValueChange={([val]) => setScalingPower(val)} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="lg:col-span-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Share of Keyword Usage by Group</CardTitle>
-            </CardHeader>
-            {/* THE FIX: Add a static height to the chart container to prevent resizing */}
-            <CardContent className="h-[450px] lg:h-[700px]">
-              <p className="mb-4 text-center text-sm text-gray-600 italic">
-                {countText}
-              </p>
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
+        
+        <Tabs defaultValue="chart-view" className="w-full">
+          <TabsList>
+            <TabsTrigger value="chart-view">Chart View</TabsTrigger>
+            <TabsTrigger value="table-view" disabled>Table View</TabsTrigger>
+            <TabsTrigger value="item-view" disabled>Item View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="chart-view" className="mt-4">
+            <div className="flex flex-col gap-6">
+              {/* Control Bar */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-start gap-x-6 gap-y-4">
+                    <div className="flex-grow space-y-2 min-w-[250px]">
+                      <Label htmlFor="search">Search Ngram</Label>
+                      <Input id="search" placeholder="e.g. human rights" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Node Size Range (px)</Label>
+                      <div className="flex items-center gap-2">
+                        <Input type="number" value={minNodeSize} onChange={(e) => setMinNodeSize(Number(e.target.value))} className="w-20" aria-label="Minimum node size" />
+                        <Input type="number" value={maxNodeSize} onChange={(e) => setMaxNodeSize(Number(e.target.value))} className="w-20" aria-label="Maximum node size" />
+                      </div>
+                    </div>
+                    <div className="flex-grow space-y-2 min-w-[200px]">
+                      <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
+                      <Slider id="scaling-power" min={0.1} max={5} step={0.1} value={[scalingPower]} onValueChange={([val]) => setScalingPower(val)} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {isLoading && (<div className="w-full h-full"><Skeleton className="w-full h-full" /></div>)}
-              {isError && (<div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> Failed to load data.</p><p className="text-sm">{error?.message}</p></div>)}
-              {!isLoading && !isError && (<TernaryPlot data={plotData} layout={plotLayout} />)}
-            </CardContent>
-          </Card>
-        </div>
+              {/* Chart Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Share of Keyword Usage by Group</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[520px] lg:h-[800px] flex flex-col">
+                  <p className="mb-4 text-sm text-gray-600">
+                    {countText}
+                  </p>
+
+                  <div className="flex-grow">
+                    {isLoading && (<div className="w-full h-full"><Skeleton className="w-full h-full" /></div>)}
+                    {isError && (<div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> Failed to load data.</p><p className="text-sm">{error?.message}</p></div>)}
+                    {!isLoading && !isError && (
+                      <TernaryPlot 
+                        data={plotData} 
+                        layout={plotLayout}
+                      />
+                    )}
+                  </div>
+                  
+                  {isMobile && !isLoading && !isError && (
+                    <div className="w-full pt-4">
+                      <HorizontalColorbar
+                        title="Total Mentions"
+                        min={mentionStats.min}
+                        max={mentionStats.max}
+                        colorscale={TERNARY_COLORSACLE}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Placeholder for Table View */}
+          <TabsContent value="table-view">
+             <Card><CardContent className="p-4">Table view is not yet implemented.</CardContent></Card>
+          </TabsContent>
+          {/* Placeholder for Item View */}
+          <TabsContent value="item-view">
+             <Card><CardContent className="p-4">Item view is not yet implemented.</CardContent></Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
