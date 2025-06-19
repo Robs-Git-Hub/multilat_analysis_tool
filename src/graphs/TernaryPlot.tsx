@@ -22,6 +22,7 @@ const TernaryPlot: React.FC<TernaryPlotProps> = ({ data, layout }) => {
       config={{
         responsive: true,
         displaylogo: false,
+        displayModeBar: false, // This line disables the Plotly toolbar
       }}
       style={{ width: '100%', height: '100%' }}
       useResizeHandler={true}

@@ -164,10 +164,10 @@ const AppNavigation = () => (
     <div className="max-w-5xl mx-auto px-4 sm:px-8">
       <div className="flex items-center justify-start h-12">
         <div className="flex items-center space-x-4">
-          <NavLink to="/keyword-analysis" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
+          <NavLink to="/keyword-analysis" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white text-teal-800 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
             Keyword Analysis
           </NavLink>
-          <NavLink to="/country-analysis" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
+          <NavLink to="/country-analysis" className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white text-teal-800 shadow-sm' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'}`}>
             Country Analysis
           </NavLink>
           <div className="border-l border-gray-300 h-6" />

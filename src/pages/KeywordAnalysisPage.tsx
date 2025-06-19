@@ -22,8 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HorizontalColorbar } from '@/components/prototypes/HorizontalColorbar';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// Define colorscale once to be reused by Plotly and the custom colorbar
-const TERNARY_COLORSACLE: [number, string][] = [[0, '#e0f2f1'], [1, '#437e84']];
+// UPDATED: Using user-specified hex codes for the color scale.
+const TERNARY_COLORSACLE: [number, string][] = [[0, '#c7d8da'], [1, '#36656a']];
 
 const KeywordAnalysisPage = () => {
   const isMobile = useIsMobile();

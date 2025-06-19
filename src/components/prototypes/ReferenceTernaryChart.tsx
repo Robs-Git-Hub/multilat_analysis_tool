@@ -100,7 +100,7 @@ const ReferenceTernaryChart: React.FC<ReferenceTernaryChartProps> = ({ data, onN
     },
   };
 
-  const colorscale: [number, string][] = [[0, '#e0f2f1'], [1, '#437e84']];
+  const colorscale: [number, string][] = [[0, '#c7d8da'], [1, '#36656a']];
 
   // --- 3. Data Transformation for Plotly ---
   const trace: Data = {
