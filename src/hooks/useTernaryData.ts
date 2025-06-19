@@ -1,68 +1,51 @@
 
 // src/hooks/useTernaryData.ts
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { calculateBaseTernaryAttributes, ItemWithTernaryAttributes } from '@/utils/ternaryDataProcessing';
 
-export interface TernaryDataPoint {
-  ngram: string;
-  normalized_frequency_A: number;
-  normalized_frequency_BCDE: number;
-  normalized_frequency_F: number;
-  normalized_frequency_G: number;
-  count_A: number;
-  count_BCDE: number;
-  count_F: number;
-  count_G: number;
-  p_value?: number;
-  lor_polarization_score?: number;
-}
+// The hook now returns data that has been processed by our utility function.
+export type TernaryDataItem = ItemWithTernaryAttributes;
 
+/**
+ * Fetches and processes ngram statistics for the ternary plot.
+ *
+ * This hook performs the following steps:
+ * 1. Fetches the raw count data (`count_A`, `count_G`, `count_BCDE`) for all ngrams from Supabase.
+ * 2. Processes this raw data using the `calculateBaseTernaryAttributes` utility function.
+ *    This function calculates the normalized coordinates (P_US, P_Russia, P_Middle) and TotalMentions
+ *    for each ngram, based on the distribution across the entire dataset.
+ * 3. Returns the processed data, ready for visualization.
+ */
 export const useTernaryData = () => {
-  return useQuery({
-    queryKey: ['ternary-data'],
-    queryFn: async (): Promise<TernaryDataPoint[]> => {
+  return useQuery<TernaryDataItem[], Error>({
+    queryKey: ['ternaryData'],
+    queryFn: async () => {
+      // 1. Fetch only the raw columns we need for the calculation.
       const { data, error } = await supabase
         .from('oewg_ngram_statistics')
-        .select(`
-          ngram,
-          normalized_frequency_A,
-          normalized_frequency_BCDE,
-          normalized_frequency_F,
-          normalized_frequency_G,
-          count_A,
-          count_BCDE,
-          count_F,
-          count_G,
-          p_value,
-          lor_polarization_score
-        `);
+        .select('ngram, count_A, count_G, count_BCDE');
 
       if (error) {
-        // Throw a standard Error object to ensure consistent error handling.
-        // This satisfies the test assertion `toBeInstanceOf(Error)`.
+        console.error("Error fetching ternary data:", error);
         throw new Error(error.message);
       }
 
-      // The nullish coalescing operator (??) provides a default value for null/undefined fields.
-      const transformedData = (data || []).map(stat => ({
-        ngram: stat.ngram,
-        normalized_frequency_A: stat.normalized_frequency_A ?? 0,
-        normalized_frequency_BCDE: stat.normalized_frequency_BCDE ?? 0,
-        normalized_frequency_F: stat.normalized_frequency_F ?? 0,
-        normalized_frequency_G: stat.normalized_frequency_G ?? 0,
-        count_A: stat.count_A ?? 0,
-        count_BCDE: stat.count_BCDE ?? 0,
-        count_F: stat.count_F ?? 0,
-        count_G: stat.count_G ?? 0,
-        p_value: stat.p_value ?? undefined,
-        lor_polarization_score: stat.lor_polarization_score ?? undefined,
+      // The `calculateBaseTernaryAttributes` function expects each item to have an `id`.
+      // We map `ngram` to `id` to conform to the utility's contract.
+      const rawDataWithIds = data.map(item => ({
+        ...item,
+        id: item.ngram,
       }));
 
-      return transformedData;
+      // 2. Process the raw data to calculate ternary attributes.
+      const processedData = calculateBaseTernaryAttributes(rawDataWithIds, {
+        us_count_col: 'count_A',
+        russia_count_col: 'count_G',
+        middle_count_col: 'count_BCDE',
+      });
+
+      return processedData;
     },
-    // Set cache times for data freshness and memory management.
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };

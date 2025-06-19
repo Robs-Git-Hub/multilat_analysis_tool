@@ -4,7 +4,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import { useTernaryData, TernaryDataPoint } from '../useTernaryData';
+import { useTernaryData, TernaryDataItem } from '../useTernaryData';
 import { server } from '@/mocks/server';
 import { http, HttpResponse } from 'msw';
 
@@ -28,55 +28,68 @@ const createWrapper = () => {
 };
 
 describe('useTernaryData', () => {
-  it('should fetch data, transform nulls, and return it using the default mock', async () => {
-    // ARRANGE: Define the final, clean data we expect the hook to produce.
-    // This is based on the default mock data now defined in `src/mocks/handlers.ts`.
-    const expectedTransformedData: TernaryDataPoint[] = [
-      {
-        ngram: 'test ngram',
-        normalized_frequency_A: 0.1,
-        normalized_frequency_BCDE: 0.2,
-        normalized_frequency_F: 0.3,
-        normalized_frequency_G: 0.4,
-        count_A: 10,
-        count_BCDE: 20,
-        count_F: 30,
-        count_G: 40,
-        p_value: 0.05,
-        lor_polarization_score: 1.5,
-      },
-      {
-        ngram: 'null ngram',
-        normalized_frequency_A: 0,
-        normalized_frequency_BCDE: 0.5,
-        normalized_frequency_F: 0,
-        normalized_frequency_G: 0.5,
-        count_A: 0,
-        count_BCDE: 50,
-        count_F: 0,
-        count_G: 50,
-        p_value: undefined,
-        lor_polarization_score: undefined,
-      },
-    ];
+  // Define the raw data our mock API will return.
+  const mockRawApiData = [
+    { ngram: 'sustainable development', count_A: 10, count_G: 20, count_BCDE: 70 },
+    { ngram: 'human rights', count_A: 30, count_G: 0, count_BCDE: 10 },
+  ];
 
-    // ACT: Render the hook. It will now automatically use the default handler
-    // from `src/mocks/handlers.ts`. No `server.use()` is needed here.
+  // This is the expected result AFTER our hook processes the raw data.
+  // This data is calculated based on the logic in `calculateBaseTernaryAttributes`.
+  const expectedProcessedData: TernaryDataItem[] = [
+    {
+      id: 'sustainable development',
+      ngram: 'sustainable development',
+      count_A: 10,
+      count_G: 20,
+      count_BCDE: 70,
+      TotalMentions: 100,
+      P_US: 0.11764705882352941,
+      P_Russia: 0.47058823529411764,
+      P_Middle: 0.4117647058823529,
+    },
+    {
+      id: 'human rights',
+      ngram: 'human rights',
+      count_A: 30,
+      count_G: 0,
+      count_BCDE: 10,
+      TotalMentions: 40,
+      P_US: 0.8823529411764706,
+      P_Russia: 0,
+      P_Middle: 0.11764705882352941,
+    },
+  ];
+
+  beforeEach(() => {
+    // Set up the mock handler to return our raw data for all tests in this suite.
+    server.use(
+      http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
+        return HttpResponse.json(mockRawApiData);
+      })
+    );
+  });
+
+  it('should fetch raw data and process it into ternary attributes', async () => {
+    // ARRANGE: The mock server is already configured in the beforeEach hook.
+
+    // ACT: Render the hook.
     const { result } = renderHook(() => useTernaryData(), {
       wrapper: createWrapper(),
     });
 
-    // ASSERT: Wait for the hook to finish fetching and check the result.
+    // ASSERT: Wait for the hook to finish fetching and processing.
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual(expectedTransformedData);
+    // Verify that the hook's output matches our expected processed data.
+    // This proves that the query and the transformation logic are working correctly together.
+    expect(result.current.data).toEqual(expectedProcessedData);
   });
 
   it('should handle API errors gracefully', async () => {
-    // ARRANGE: For this specific test, we override the default handler
-    // to force an error response.
+    // ARRANGE: For this specific test, override the default handler to force an error.
     server.use(
       http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
         return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
