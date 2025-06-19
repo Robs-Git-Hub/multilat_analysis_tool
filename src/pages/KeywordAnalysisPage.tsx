@@ -25,7 +25,7 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import type { Data, Layout } from 'plotly.js';
+import type { Data, Layout, PlotMouseEvent } from 'plotly.js';
 
 import { useConfigurableTernaryData } from '@/hooks/useConfigurableTernaryData';
 import { TERNARY_CHART_CONFIGS } from '@/config/ternaryChartConfigs';
@@ -45,7 +45,6 @@ import { HorizontalColorbar } from '@/components/prototypes/HorizontalColorbar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable, ColumnDef } from '@/components/shared/DataTable';
 
-// UPDATED: Using user-specified hex codes for the color scale.
 const TERNARY_COLORSACLE: [number, string][] = [[0, '#c7d8da'], [1, '#36656a']];
 
 const KeywordAnalysisPage = () => {
@@ -60,12 +59,8 @@ const KeywordAnalysisPage = () => {
   const [scalingPower, setScalingPower] = useState(2);
   const [isPrecise, setIsPrecise] = useState(false);
   const [activeView, setActiveView] = useState('chart-view');
-  // --- START: Added state for sorting ---
-  const [sortKey, setSortKey] = useState<keyof ItemWithSize | null>('TotalMentions');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  // --- END: Added state for sorting ---
+  const [selectedItem, setSelectedItem] = useState<ItemWithSize | null>(null);
 
-  // Step 1: Calculate bubble sizes for the entire raw dataset first.
   const sizedData = useMemo(() => {
     if (!rawData) return [];
     return recalculateBubbleSizes(rawData, {
@@ -75,15 +70,16 @@ const KeywordAnalysisPage = () => {
     });
   }, [rawData, minNodeSize, maxNodeSize, scalingPower]);
 
-  // Step 2: Perform the search on the sized data.
   const filteredData = useMemo(() => {
     return performSearch(sizedData, searchTerm, isPrecise);
   }, [sizedData, searchTerm, isPrecise]);
   
-  // --- START: Step 3: Sort the filtered data ---
+  const [sortKey, setSortKey] = useState<keyof ItemWithSize | null>('TotalMentions');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   const processedData = useMemo(() => {
     if (!sortKey) return filteredData;
-
+    
     const sorted = [...filteredData].sort((a, b) => {
       const aValue = a[sortKey];
       const bValue = b[sortKey];
@@ -101,30 +97,24 @@ const KeywordAnalysisPage = () => {
     if (sortDirection === 'desc') {
       sorted.reverse();
     }
-
     return sorted;
   }, [filteredData, sortKey, sortDirection]);
-  // --- END: Step 3: Sort the filtered data ---
 
   const { countText, mentionStats } = useMemo(() => {
     if (isLoading || !rawData) return { countText: null, mentionStats: { min: 0, max: 0 } };
     if (isError) return { countText: "Data could not be loaded.", mentionStats: { min: 0, max: 0 }};
-
     const totalCount = rawData.length;
     const displayedCount = processedData.length;
     const searchActive = searchTerm.trim() !== '';
     const text = `Displaying ${displayedCount} of ${totalCount} total items${searchActive ? ' (filtered by search)' : ''}.`;
-
     const mentionValues = processedData.map(d => d.TotalMentions);
     const stats = {
       min: mentionValues.length > 0 ? Math.min(...mentionValues) : 0,
       max: mentionValues.length > 0 ? Math.max(...mentionValues) : 0,
     };
-
     return { countText: text, mentionStats: stats };
   }, [isLoading, isError, rawData, processedData, searchTerm]);
 
-  // --- START: Table View Configuration & Handlers ---
   const tableColumns: ColumnDef<ItemWithSize>[] = [
     { key: 'ngram', header: 'N-gram' },
     { key: 'TotalMentions', header: 'Total Mentions' },
@@ -141,7 +131,20 @@ const KeywordAnalysisPage = () => {
       setSortDirection('desc');
     }
   };
-  // --- END: Table View Configuration & Handlers ---
+
+  const handleSelect = (item: ItemWithSize) => {
+    setSelectedItem(item);
+    setActiveView('item-view');
+  };
+
+  const handleNodeClick = (event: Readonly<PlotMouseEvent>) => {
+    if (event.points && event.points.length > 0) {
+      const clickedPoint = event.points[0];
+      if (clickedPoint.customdata && typeof clickedPoint.customdata === 'object') {
+        handleSelect(clickedPoint.customdata as ItemWithSize);
+      }
+    }
+  };
 
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
@@ -197,49 +200,51 @@ const KeywordAnalysisPage = () => {
           <TabsList>
             <TabsTrigger value="chart-view">Chart View</TabsTrigger>
             <TabsTrigger value="table-view">Table View</TabsTrigger>
-            <TabsTrigger value="item-view" disabled>Item View</TabsTrigger>
+            <TabsTrigger value="item-view">Item View</TabsTrigger>
           </TabsList>
           
-          <Card className="mt-4">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-start gap-x-6 gap-y-4">
-                
-                <div className="flex-grow space-y-2 min-w-[250px]">
-                  <Label htmlFor="search">Search Ngram</Label>
-                  <Input 
-                    id="search" 
-                    placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."} 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                  />
-                </div>
+          {activeView !== 'item-view' && (
+            <Card className="mt-4">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-start gap-x-6 gap-y-4">
+                  
+                  <div className="flex-grow space-y-2 min-w-[250px]">
+                    <Label htmlFor="search">Search Ngram</Label>
+                    <Input 
+                      id="search" 
+                      placeholder={isPrecise ? "Use !, |, ' for logic..." : "Fuzzy search by n-gram..."} 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)} 
+                    />
+                  </div>
 
-                <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-2">
-                    <Checkbox id="precise-search" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
-                    <Label htmlFor="precise-search" className="font-normal whitespace-nowrap">Precise</Label>
-                    </div>
-                    <SearchHelp />
-                </div>
-
-                {activeView === 'chart-view' && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Node Size Range (px)</Label>
-                      <div className="flex items-center gap-2">
-                        <Input type="number" value={minNodeSize} onChange={(e) => setMinNodeSize(Number(e.target.value))} className="w-20" aria-label="Minimum node size" />
-                        <Input type="number" value={maxNodeSize} onChange={(e) => setMaxNodeSize(Number(e.target.value))} className="w-20" aria-label="Maximum node size" />
+                  <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2">
+                      <Checkbox id="precise-search" checked={isPrecise} onCheckedChange={(checked) => setIsPrecise(Boolean(checked))} />
+                      <Label htmlFor="precise-search" className="font-normal whitespace-nowrap">Precise</Label>
                       </div>
-                    </div>
-                    <div className="flex-grow space-y-2 min-w-[200px]">
-                      <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
-                      <Slider id="scaling-power" min={0.1} max={5} step={0.1} value={[scalingPower]} onValueChange={([val]) => setScalingPower(val)} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                      <SearchHelp />
+                  </div>
+
+                  {activeView === 'chart-view' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Node Size Range (px)</Label>
+                        <div className="flex items-center gap-2">
+                          <Input type="number" value={minNodeSize} onChange={(e) => setMinNodeSize(Number(e.target.value))} className="w-20" aria-label="Minimum node size" />
+                          <Input type="number" value={maxNodeSize} onChange={(e) => setMaxNodeSize(Number(e.target.value))} className="w-20" aria-label="Maximum node size" />
+                        </div>
+                      </div>
+                      <div className="flex-grow space-y-2 min-w-[200px]">
+                        <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
+                        <Slider id="scaling-power" min={0.1} max={5} step={0.1} value={[scalingPower]} onValueChange={([val]) => setScalingPower(val)} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <TabsContent value="chart-view" className="mt-4">
               <Card>
@@ -258,6 +263,7 @@ const KeywordAnalysisPage = () => {
                       <TernaryPlot 
                         data={plotData} 
                         layout={plotLayout}
+                        onClick={handleNodeClick}
                       />
                     )}
                   </div>
@@ -286,11 +292,31 @@ const KeywordAnalysisPage = () => {
               sortKey={sortKey}
               sortDirection={sortDirection}
               onSortChange={handleSort}
+              onRowClick={handleSelect}
             />
           </TabsContent>
 
-          <TabsContent value="item-view">
-             <Card><CardContent className="p-4">Item view is not yet implemented.</CardContent></Card>
+          <TabsContent value="item-view" className="mt-4">
+            {selectedItem ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{selectedItem.ngram}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul>
+                    {Object.entries(selectedItem).map(([key, value]) => (
+                      <li key={key} className="text-sm py-2 border-b">
+                        <span className="font-semibold capitalize">{key.replace(/_/g, ' ')}:</span> {typeof value === 'number' ? value.toFixed(3) : String(value)}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="text-center p-8 bg-gray-50 rounded-lg border">
+                <p className="text-gray-600">Select an item from the Chart or Table view to see its details here.</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

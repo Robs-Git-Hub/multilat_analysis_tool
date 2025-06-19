@@ -1,14 +1,16 @@
+
 // src/utils/ternaryDataProcessing.ts
 
 // --- Type Definitions ---
 
 /**
  * Represents a basic data item with raw mention counts.
- * The `[key: string]: any` allows for other properties on the object.
  */
 export interface RawCountItem {
   id: string | number;
-  [key:string]: any;
+  // FIX: Make the index signature specific to our actual data types.
+  // This prevents downstream errors by ensuring we only deal with primitives.
+  [key: string]: string | number | null | undefined;
 }
 
 /**
