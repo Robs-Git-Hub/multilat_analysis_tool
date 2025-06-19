@@ -5,10 +5,11 @@
 import { useMemo, useState } from 'react';
 import type { Data, Layout } from 'plotly.js';
 
-import { useTernaryData } from '@/hooks/useTernaryData';
+import { useConfigurableTernaryData } from '@/hooks/useConfigurableTernaryData';
+import { TERNARY_CHART_CONFIGS } from '@/config/ternaryChartConfigs';
+
 import { recalculateBubbleSizes } from '@/utils/ternaryDataProcessing';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 import TernaryPlot from '@/graphs/TernaryPlot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,12 +17,11 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
 
-/**
- * Page dedicated to analyzing keyword (n-gram) usage across voting blocs.
- */
 const KeywordAnalysisPage = () => {
   const isMobile = useIsMobile();
-  const { data: rawData, isLoading, isError, error } = useTernaryData();
+  
+  const chartConfig = TERNARY_CHART_CONFIGS['ngrams'];
+  const { data: rawData, isLoading, isError, error } = useConfigurableTernaryData(chartConfig);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [minNodeSize, setMinNodeSize] = useState(5);
@@ -29,10 +29,10 @@ const KeywordAnalysisPage = () => {
   const [scalingPower, setScalingPower] = useState(2);
 
   const processedData = useMemo(() => {
-    if (!rawData) return [];
+    if (!rawData || !chartConfig) return [];
 
     const filteredData = rawData.filter(item =>
-      item.ngram.toLowerCase().includes(searchTerm.toLowerCase())
+      String(item[chartConfig.labelCol]).toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return recalculateBubbleSizes(filteredData, {
@@ -40,7 +40,7 @@ const KeywordAnalysisPage = () => {
       maxSize: maxNodeSize,
       scalingPower: scalingPower,
     });
-  }, [rawData, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
+  }, [rawData, chartConfig, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
 
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
@@ -66,7 +66,7 @@ const KeywordAnalysisPage = () => {
   }, [isMobile]);
 
   const plotData = useMemo((): Data[] => {
-    if (!processedData) return [];
+    if (!processedData || !chartConfig) return [];
     
     const trace: Data = {
       type: 'scatterternary',
@@ -74,7 +74,7 @@ const KeywordAnalysisPage = () => {
       a: processedData.map(d => d.P_Middle),
       b: processedData.map(d => d.P_Russia),
       c: processedData.map(d => d.P_US),
-      text: processedData.map(d => d.ngram),
+      text: processedData.map(d => d[chartConfig.labelCol]),
       customdata: processedData,
       hovertemplate: "<b>Ngram:</b> %{text}<br>" + "P_US: %{c:.3f}<br>" + "P_Russia: %{b:.3f}<br>" + "P_Middle: %{a:.3f}<br>" + "Total Mentions: %{customdata.TotalMentions}<br>" + "<extra></extra>",
       marker: {
@@ -86,21 +86,16 @@ const KeywordAnalysisPage = () => {
       },
     } as any;
     return [trace];
-  }, [processedData, isMobile]);
-
-  // --- DIAGNOSTIC LOG: Inspect the data just before passing it to the plot component ---
-  if (!isLoading && plotData.length > 0 && (plotData[0] as any)?.a) {
-    console.log(`[DEBUG] Final Handoff to Plotly:`);
-    console.log(`  - Number of data points in trace: ${(plotData[0] as any).a.length}`);
-    console.log(`  - This is the number of nodes we are asking Plotly to render.`);
-  }
+  }, [processedData, isMobile, chartConfig]);
 
   return (
     <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
           <Card>
-            <CardHeader><CardTitle>Controls</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Controls</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="search">Search Ngram</Label>
@@ -122,7 +117,9 @@ const KeywordAnalysisPage = () => {
         </div>
         <div className="lg:col-span-3">
           <Card>
-            <CardHeader><CardTitle>Share of Keyword Usage by Group</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Share of Keyword Usage by Group</CardTitle>
+            </CardHeader>
             <CardContent>
               {isLoading && (<div className="w-full h-[450px] lg:h-[700px]"><Skeleton className="w-full h-full" /></div>)}
               {isError && (<div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> Failed to load data.</p><p className="text-sm">{error?.message}</p></div>)}
