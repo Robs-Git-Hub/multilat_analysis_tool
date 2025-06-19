@@ -24,7 +24,9 @@ export const useTernaryData = () => {
       // 1. Fetch only the raw columns we need for the calculation.
       const { data, error } = await supabase
         .from('oewg_ngram_statistics')
-        .select('ngram, count_A, count_G, count_BCDE');
+        .select('ngram, count_A, count_G, count_BCDE')
+        // FIX: Increase the query limit to fetch all rows, not just the default 1000.
+        .limit(5000);
 
       if (error) {
         console.error("Error fetching ternary data:", error);

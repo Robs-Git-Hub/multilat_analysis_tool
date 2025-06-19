@@ -5,7 +5,7 @@
 import { useMemo, useState } from 'react';
 import type { Data, Layout } from 'plotly.js';
 
-import { useTernaryData, TernaryDataItem } from '@/hooks/useTernaryData';
+import { useTernaryData } from '@/hooks/useTernaryData';
 import { recalculateBubbleSizes } from '@/utils/ternaryDataProcessing';
 import { useIsMobile } from '@/hooks/use-mobile';
 
