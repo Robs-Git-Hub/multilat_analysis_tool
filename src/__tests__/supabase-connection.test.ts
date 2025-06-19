@@ -18,29 +18,33 @@ describe('Supabase Connection and Permissions', () => {
     expect(typeof supabase.from).toBe('function');
   });
 
-  // Test 2: A comprehensive suite of REAL integration tests.
-  // We use `describe.each` to run the same test logic for each table,
-  // keeping our code DRY (Don't Repeat Yourself).
-  const requiredTables = [
-    'oewg_members',
-    'oewg_sessions',
-    'oewg_documents',
-    'oewg_paragraphs',
-    'oewg_views_referenced_documents',
-    'oewg_views_topic_and_sentiment',
-    'oewg_views_topic_and_sentiment_by_country',
-    'oewg_views_topic_and_sentiment_by_region',
-  ];
+  // Test 2: A comprehensive suite for TABLES.
+  // This list is derived from the "Data Mapping" investigation.
+  const requiredTables = ['oewg_ngram_statistics', 'intervention', 'country'] as const;
 
   describe.each(requiredTables)('Table: %s', (table) => {
+    it('should be able to perform a simple, read-only query without error', async () => {
+      const { error } = await supabase.from(table).select('*', { head: true });
+      expect(error).toBeNull();
+    });
+  });
+
+  // Test 3: A comprehensive suite for VIEWS.
+  // This list is also derived from the "Data Mapping" investigation.
+  const requiredViews = [
+    'vw_ngram_sentence_unpivoted',
+    'vw_country_ngram_sentence_counts',
+  ] as const;
+
+  describe.each(requiredViews)('View: %s', (view) => {
     it('should be able to perform a simple, read-only query without error', async () => {
       // We use `{ head: true }` as a performance optimization. It tells Supabase
       // to execute the query and check permissions, but not to return any actual
       // row data. This is the most efficient way to confirm connectivity.
-      const { error } = await supabase.from(table).select('*', { head: true });
+      const { error } = await supabase.from(view).select('*', { head: true });
 
       // The test passes if the error object is null.
-      // A non-null error would indicate a problem with credentials, RLS, or the table name.
+      // A non-null error would indicate a problem with credentials, RLS, or the view name.
       expect(error).toBeNull();
     });
   });
