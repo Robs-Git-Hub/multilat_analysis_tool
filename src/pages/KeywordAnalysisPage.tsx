@@ -2,20 +2,182 @@
 // src/pages/KeywordAnalysisPage.tsx
 "use client";
 
+import { useMemo, useState } from 'react';
+import type { Data, Layout } from 'plotly.js';
+
+import { useTernaryData, TernaryDataItem } from '@/hooks/useTernaryData';
+import { recalculateBubbleSizes } from '@/utils/ternaryDataProcessing';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+import TernaryPlot from '@/graphs/TernaryPlot';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Skeleton } from '@/components/ui/skeleton';
+
 /**
  * Page dedicated to analyzing keyword (n-gram) usage across voting blocs.
- * This page will be connected to live data and feature interactive controls.
+ * This page connects to live data and features interactive controls for
+ * filtering and adjusting the visualization.
  */
 const KeywordAnalysisPage = () => {
+  const isMobile = useIsMobile();
+  const { data: rawData, isLoading, isError, error } = useTernaryData();
+
+  // --- 1. State for UI Controls ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [minNodeSize, setMinNodeSize] = useState(5);
+  const [maxNodeSize, setMaxNodeSize] = useState(50);
+  const [scalingPower, setScalingPower] = useState(2);
+
+  // --- 2. Component-Level Data Processing Pipeline ---
+  // This is memoized to prevent expensive recalculations on every render.
+  const processedData = useMemo(() => {
+    if (!rawData) return [];
+
+    // First, filter data based on the search term (case-insensitive).
+    const filteredData = rawData.filter(item =>
+      item.ngram.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Then, recalculate bubble sizes based on UI controls.
+    return recalculateBubbleSizes(filteredData, {
+      minSize: minNodeSize,
+      maxSize: maxNodeSize,
+      scalingPower: scalingPower,
+    });
+  }, [rawData, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
+
+  // --- 3. Plotly Configuration ---
+  // Memoized separately as layout only depends on mobile status.
+  const plotLayout = useMemo((): Partial<Layout> => {
+    const desktopTernaryConfig = {
+      sum: 1,
+      aaxis: { title: { text: 'Middle-ground Share<br>' }, tickfont: { size: 10 } },
+      baxis: { title: { text: 'Russia-like-voting<br>Share' }, tickfont: { size: 10 } },
+      caxis: { title: { text: 'US-like-voting<br>Share' }, tickfont: { size: 10 } },
+    };
+
+    const mobileTernaryConfig = {
+      ...desktopTernaryConfig,
+      aaxis: { ...desktopTernaryConfig.aaxis, title: { ...desktopTernaryConfig.aaxis.title, font: { size: 8 } }, tickfont: { size: 8 } },
+      baxis: { title: { text: 'Russia-like-<br>voting<br>Share', font: { size: 8 } }, tickfont: { size: 8 } },
+      caxis: { title: { text: 'US-like-<br>voting<br>Share', font: { size: 8 } }, tickfont: { size: 8 } },
+    };
+
+    return {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { color: '#1a1d1d' },
+      ternary: isMobile ? mobileTernaryConfig : desktopTernaryConfig,
+      height: isMobile ? 450 : 700,
+      margin: isMobile ? { l: 40, r: 40, b: 40, t: 20 } : { l: 50, r: 50, b: 50, t: 50 },
+    };
+  }, [isMobile]);
+
+  // Memoized to regenerate the trace only when data changes.
+  const plotData = useMemo((): Data[] => {
+    if (!processedData) return [];
+    
+    const trace: Data = {
+      type: 'scatterternary',
+      mode: 'markers',
+      a: processedData.map(d => d.P_Middle),
+      b: processedData.map(d => d.P_Russia),
+      c: processedData.map(d => d.P_US),
+      text: processedData.map(d => d.ngram),
+      customdata: processedData,
+      hovertemplate: "<b>Ngram:</b> %{text}<br>" + "P_US: %{c:.3f}<br>" + "P_Russia: %{b:.3f}<br>" + "P_Middle: %{a:.3f}<br>" + "Total Mentions: %{customdata.TotalMentions}<br>" + "<extra></extra>",
+      marker: {
+        size: processedData.map(d => d.size_px),
+        color: processedData.map(d => d.TotalMentions),
+        colorscale: [[0, '#e0f2f1'], [1, '#437e84']],
+        showscale: !isMobile,
+        colorbar: { title: { text: 'Total Mentions' }, thickness: 20, len: 0.75 },
+      },
+    } as any;
+    return [trace];
+  }, [processedData, isMobile]);
+
+  // --- 4. Render Component ---
   return (
-    <div className="p-4 sm:p-8 bg-multilat-surface min-h-screen">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-semibold text-gray-900">Keyword Analysis</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          This page will display the relative usage of keywords (n-grams) between different voting blocs, connected to live data from Supabase.
-        </p>
-        <div className="mt-8 p-8 text-center text-gray-500 bg-gray-50 rounded-lg border">
-          <p>The live Keyword Analysis ternary plot will be implemented here.</p>
+    <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {/* --- Controls Column --- */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Controls</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="search">Search Ngram</Label>
+                <Input
+                  id="search"
+                  placeholder="e.g. human rights"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Node Size Range (px)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    type="number"
+                    value={minNodeSize}
+                    onChange={(e) => setMinNodeSize(Number(e.target.value))}
+                    className="w-1/2"
+                    aria-label="Minimum node size"
+                  />
+                  <Input
+                    type="number"
+                    value={maxNodeSize}
+                    onChange={(e) => setMaxNodeSize(Number(e.target.value))}
+                    className="w-1/2"
+                    aria-label="Maximum node size"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
+                <Slider
+                  id="scaling-power"
+                  min={0.1}
+                  max={5}
+                  step={0.1}
+                  value={[scalingPower]}
+                  onValueChange={([val]) => setScalingPower(val)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* --- Chart Column --- */}
+        <div className="lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Share of Keyword Usage by Group</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading && (
+                <div className="w-full h-[450px] lg:h-[700px]">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              )}
+              {isError && (
+                <div className="text-red-600 bg-red-50 p-4 rounded-md">
+                  <p><strong>Error:</strong> Failed to load data.</p>
+                  <p className="text-sm">{error?.message}</p>
+                </div>
+              )}
+              {!isLoading && !isError && (
+                <TernaryPlot data={plotData} layout={plotLayout} />
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
