@@ -1,4 +1,6 @@
 
+// src/hooks/__tests__/useTernaryData.test.tsx
+
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
@@ -11,8 +13,7 @@ const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Disable retries in tests for faster feedback
-        retry: false,
+        retry: false, // Disable retries in tests for faster feedback
       },
     },
   });
@@ -27,38 +28,9 @@ const createWrapper = () => {
 };
 
 describe('useTernaryData', () => {
-  it('should fetch data, transform nulls to 0/undefined, and return it', async () => {
-    // 1. ARRANGE: Define the raw data our mock API will return
-    const mockRawData = [
-      {
-        ngram: 'test ngram',
-        normalized_frequency_A: 0.1,
-        normalized_frequency_BCDE: 0.2,
-        normalized_frequency_F: 0.3,
-        normalized_frequency_G: 0.4,
-        count_A: 10,
-        count_BCDE: 20,
-        count_F: 30,
-        count_G: 40,
-        p_value: 0.05,
-        lor_polarization_score: 1.5,
-      },
-      {
-        ngram: 'null ngram',
-        normalized_frequency_A: null,
-        normalized_frequency_BCDE: 0.5,
-        normalized_frequency_F: null,
-        normalized_frequency_G: 0.5,
-        count_A: null,
-        count_BCDE: 50,
-        count_F: null,
-        count_G: 50,
-        p_value: null,
-        lor_polarization_score: null,
-      },
-    ];
-
-    // 2. ARRANGE: Define the final, clean data we expect the hook to produce
+  it('should fetch data, transform nulls, and return it using the default mock', async () => {
+    // ARRANGE: Define the final, clean data we expect the hook to produce.
+    // This is based on the default mock data now defined in `src/mocks/handlers.ts`.
     const expectedTransformedData: TernaryDataPoint[] = [
       {
         ngram: 'test ngram',
@@ -88,20 +60,13 @@ describe('useTernaryData', () => {
       },
     ];
 
-    // THIS IS THE NEW PART: We tell MSW what to do when it sees the request.
-    // This handler is specific to this one test.
-    server.use(
-      http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
-        return HttpResponse.json(mockRawData);
-      })
-    );
-
-    // 3. ACT: Render the hook
+    // ACT: Render the hook. It will now automatically use the default handler
+    // from `src/mocks/handlers.ts`. No `server.use()` is needed here.
     const { result } = renderHook(() => useTernaryData(), {
       wrapper: createWrapper(),
     });
 
-    // 4. ASSERT: Wait for the hook to finish fetching and check the result
+    // ASSERT: Wait for the hook to finish fetching and check the result.
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
@@ -110,7 +75,8 @@ describe('useTernaryData', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    // ARRANGE: Tell MSW to return a 500 server error for this request
+    // ARRANGE: For this specific test, we override the default handler
+    // to force an error response.
     server.use(
       http.get('https://*.supabase.co/rest/v1/oewg_ngram_statistics', () => {
         return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });

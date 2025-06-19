@@ -1,10 +1,8 @@
 
+// src/hooks/useTernaryData.ts
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-// FIX: Removed unused 'NgramStatistic' type alias.
-// import type { Tables } from '@/integrations/supabase/types';
-// type NgramStatistic = Tables<'oewg_ngram_statistics'>;
 
 export interface TernaryDataPoint {
   ngram: string;
@@ -24,8 +22,6 @@ export const useTernaryData = () => {
   return useQuery({
     queryKey: ['ternary-data'],
     queryFn: async (): Promise<TernaryDataPoint[]> => {
-      console.log('Fetching ternary data from oewg_ngram_statistics...');
-      
       const { data, error } = await supabase
         .from('oewg_ngram_statistics')
         .select(`
@@ -43,12 +39,12 @@ export const useTernaryData = () => {
         `);
 
       if (error) {
-        console.error('Error fetching ternary data:', error);
-        throw error;
+        // Throw a standard Error object to ensure consistent error handling.
+        // This satisfies the test assertion `toBeInstanceOf(Error)`.
+        throw new Error(error.message);
       }
 
-      console.log(`Successfully fetched ${data?.length || 0} ngram statistics`);
-      
+      // The nullish coalescing operator (??) provides a default value for null/undefined fields.
       const transformedData = (data || []).map(stat => ({
         ngram: stat.ngram,
         normalized_frequency_A: stat.normalized_frequency_A ?? 0,
@@ -65,6 +61,7 @@ export const useTernaryData = () => {
 
       return transformedData;
     },
+    // Set cache times for data freshness and memory management.
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
