@@ -47,6 +47,28 @@ import { DataTable, ColumnDef } from '@/components/shared/DataTable';
 
 const TERNARY_COLORSACLE: [number, string][] = [[0, '#c7d8da'], [1, '#36656a']];
 
+// --- START: Type Guard for validating Plotly click event data ---
+/**
+ * A type guard function that checks if an object conforms to the ItemWithSize interface.
+ * This provides runtime safety when handling data from external libraries like Plotly.
+ * @param obj The object to check.
+ * @returns True if the object is a valid ItemWithSize, false otherwise.
+ */
+function isItemWithSize(obj: any): obj is ItemWithSize {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.id !== 'undefined' &&
+    typeof obj.ngram === 'string' &&
+    typeof obj.TotalMentions === 'number' &&
+    typeof obj.P_US === 'number' &&
+    typeof obj.P_Russia === 'number' &&
+    typeof obj.P_Middle === 'number' &&
+    typeof obj.size_px === 'number'
+  );
+}
+// --- END: Type Guard ---
+
 const KeywordAnalysisPage = () => {
   const isMobile = useIsMobile();
   
@@ -80,24 +102,25 @@ const KeywordAnalysisPage = () => {
   const processedData = useMemo(() => {
     if (!sortKey) return filteredData;
     
-    const sorted = [...filteredData].sort((a, b) => {
+    return [...filteredData].sort((a, b) => {
       const aValue = a[sortKey];
       const bValue = b[sortKey];
 
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
 
+      const direction = sortDirection === 'asc' ? 1 : -1;
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return aValue - bValue;
+        return (aValue - bValue) * direction;
       }
       
-      return String(aValue).localeCompare(String(bValue));
-    });
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue) * direction;
+      }
 
-    if (sortDirection === 'desc') {
-      sorted.reverse();
-    }
-    return sorted;
+      return String(aValue).localeCompare(String(bValue)) * direction;
+    });
   }, [filteredData, sortKey, sortDirection]);
 
   const { countText, mentionStats } = useMemo(() => {
@@ -140,8 +163,9 @@ const KeywordAnalysisPage = () => {
   const handleNodeClick = (event: Readonly<PlotMouseEvent>) => {
     if (event.points && event.points.length > 0) {
       const clickedPoint = event.points[0];
-      if (clickedPoint.customdata && typeof clickedPoint.customdata === 'object') {
-        handleSelect(clickedPoint.customdata as ItemWithSize);
+      // Use the type guard for runtime safety
+      if (isItemWithSize(clickedPoint.customdata)) {
+        handleSelect(clickedPoint.customdata);
       }
     }
   };
@@ -298,7 +322,7 @@ const KeywordAnalysisPage = () => {
 
           <TabsContent value="item-view" className="mt-4">
             {selectedItem ? (
-              <Card>
+               <Card>
                 <CardHeader>
                   <CardTitle>{selectedItem.ngram}</CardTitle>
                 </CardHeader>
