@@ -18,30 +18,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Page dedicated to analyzing keyword (n-gram) usage across voting blocs.
- * This page connects to live data and features interactive controls for
- * filtering and adjusting the visualization.
  */
 const KeywordAnalysisPage = () => {
   const isMobile = useIsMobile();
   const { data: rawData, isLoading, isError, error } = useTernaryData();
 
-  // --- 1. State for UI Controls ---
   const [searchTerm, setSearchTerm] = useState('');
   const [minNodeSize, setMinNodeSize] = useState(5);
   const [maxNodeSize, setMaxNodeSize] = useState(50);
   const [scalingPower, setScalingPower] = useState(2);
 
-  // --- 2. Component-Level Data Processing Pipeline ---
-  // This is memoized to prevent expensive recalculations on every render.
   const processedData = useMemo(() => {
     if (!rawData) return [];
 
-    // First, filter data based on the search term (case-insensitive).
     const filteredData = rawData.filter(item =>
       item.ngram.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Then, recalculate bubble sizes based on UI controls.
     return recalculateBubbleSizes(filteredData, {
       minSize: minNodeSize,
       maxSize: maxNodeSize,
@@ -49,8 +42,6 @@ const KeywordAnalysisPage = () => {
     });
   }, [rawData, searchTerm, minNodeSize, maxNodeSize, scalingPower]);
 
-  // --- 3. Plotly Configuration ---
-  // Memoized separately as layout only depends on mobile status.
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
       sum: 1,
@@ -58,14 +49,12 @@ const KeywordAnalysisPage = () => {
       baxis: { title: { text: 'Russia-like-voting<br>Share' }, tickfont: { size: 10 } },
       caxis: { title: { text: 'US-like-voting<br>Share' }, tickfont: { size: 10 } },
     };
-
     const mobileTernaryConfig = {
       ...desktopTernaryConfig,
       aaxis: { ...desktopTernaryConfig.aaxis, title: { ...desktopTernaryConfig.aaxis.title, font: { size: 8 } }, tickfont: { size: 8 } },
       baxis: { title: { text: 'Russia-like-<br>voting<br>Share', font: { size: 8 } }, tickfont: { size: 8 } },
       caxis: { title: { text: 'US-like-<br>voting<br>Share', font: { size: 8 } }, tickfont: { size: 8 } },
     };
-
     return {
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'transparent',
@@ -76,7 +65,6 @@ const KeywordAnalysisPage = () => {
     };
   }, [isMobile]);
 
-  // Memoized to regenerate the trace only when data changes.
   const plotData = useMemo((): Data[] => {
     if (!processedData) return [];
     
@@ -100,82 +88,45 @@ const KeywordAnalysisPage = () => {
     return [trace];
   }, [processedData, isMobile]);
 
-  // --- 4. Render Component ---
+  // --- DIAGNOSTIC LOG: Inspect the data just before passing it to the plot component ---
+  if (!isLoading && plotData.length > 0 && (plotData[0] as any)?.a) {
+    console.log(`[DEBUG] Final Handoff to Plotly:`);
+    console.log(`  - Number of data points in trace: ${(plotData[0] as any).a.length}`);
+    console.log(`  - This is the number of nodes we are asking Plotly to render.`);
+  }
+
   return (
     <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* --- Controls Column --- */}
         <div className="lg:col-span-1">
           <Card>
-            <CardHeader>
-              <CardTitle>Controls</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Controls</CardTitle></CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="search">Search Ngram</Label>
-                <Input
-                  id="search"
-                  placeholder="e.g. human rights"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <Input id="search" placeholder="e.g. human rights" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Node Size Range (px)</Label>
                 <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
-                    value={minNodeSize}
-                    onChange={(e) => setMinNodeSize(Number(e.target.value))}
-                    className="w-1/2"
-                    aria-label="Minimum node size"
-                  />
-                  <Input
-                    type="number"
-                    value={maxNodeSize}
-                    onChange={(e) => setMaxNodeSize(Number(e.target.value))}
-                    className="w-1/2"
-                    aria-label="Maximum node size"
-                  />
+                  <Input type="number" value={minNodeSize} onChange={(e) => setMinNodeSize(Number(e.target.value))} className="w-1/2" aria-label="Minimum node size" />
+                  <Input type="number" value={maxNodeSize} onChange={(e) => setMaxNodeSize(Number(e.target.value))} className="w-1/2" aria-label="Maximum node size" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="scaling-power">Scaling Power ({scalingPower.toFixed(1)})</Label>
-                <Slider
-                  id="scaling-power"
-                  min={0.1}
-                  max={5}
-                  step={0.1}
-                  value={[scalingPower]}
-                  onValueChange={([val]) => setScalingPower(val)}
-                />
+                <Slider id="scaling-power" min={0.1} max={5} step={0.1} value={[scalingPower]} onValueChange={([val]) => setScalingPower(val)} />
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* --- Chart Column --- */}
         <div className="lg:col-span-3">
           <Card>
-            <CardHeader>
-              <CardTitle>Share of Keyword Usage by Group</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Share of Keyword Usage by Group</CardTitle></CardHeader>
             <CardContent>
-              {isLoading && (
-                <div className="w-full h-[450px] lg:h-[700px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-              )}
-              {isError && (
-                <div className="text-red-600 bg-red-50 p-4 rounded-md">
-                  <p><strong>Error:</strong> Failed to load data.</p>
-                  <p className="text-sm">{error?.message}</p>
-                </div>
-              )}
-              {!isLoading && !isError && (
-                <TernaryPlot data={plotData} layout={plotLayout} />
-              )}
+              {isLoading && (<div className="w-full h-[450px] lg:h-[700px]"><Skeleton className="w-full h-full" /></div>)}
+              {isError && (<div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> Failed to load data.</p><p className="text-sm">{error?.message}</p></div>)}
+              {!isLoading && !isError && (<TernaryPlot data={plotData} layout={plotLayout} />)}
             </CardContent>
           </Card>
         </div>
