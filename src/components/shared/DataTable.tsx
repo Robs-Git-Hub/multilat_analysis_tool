@@ -3,6 +3,7 @@
 
 import * as React from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
 
 export interface ColumnDef<T> {
   key: keyof T;
@@ -25,9 +27,21 @@ interface DataTableProps<T> {
   data: T[];
   columns: ColumnDef<T>[];
   onRowClick?: (item: T) => void;
+  // --- START: Made sorting props optional ---
+  sortKey?: keyof T | null;
+  sortDirection?: 'asc' | 'desc';
+  onSortChange?: (key: keyof T) => void;
+  // --- END: Made sorting props optional ---
 }
 
-export function DataTable<T extends { id: string | number }>({ data, columns, onRowClick }: DataTableProps<T>) {
+export function DataTable<T extends { id: string | number }>({ 
+  data, 
+  columns, 
+  onRowClick,
+  sortKey,
+  sortDirection,
+  onSortChange,
+}: DataTableProps<T>) {
   const isMobile = useIsMobile();
   const parentRef = React.useRef<HTMLDivElement>(null);
 
@@ -135,7 +149,22 @@ export function DataTable<T extends { id: string | number }>({ data, columns, on
         <TableHeader className="sticky top-0 z-10 bg-background">
           <TableRow>
             {columns.map((column) => (
-              <TableHead key={String(column.key)}>{column.header}</TableHead>
+              <TableHead key={String(column.key)}>
+                {onSortChange ? (
+                  <Button variant="ghost" onClick={() => onSortChange(column.key)} className="px-2 py-1 h-auto -ml-2">
+                    {column.header}
+                    {sortKey === column.key ? (
+                      sortDirection === 'asc' 
+                        ? <ArrowUp className="ml-2 h-4 w-4" /> 
+                        : <ArrowDown className="ml-2 h-4 w-4" />
+                    ) : (
+                      <ChevronsUpDown className="ml-2 h-4 w-4 text-muted-foreground/50" />
+                    )}
+                  </Button>
+                ) : (
+                  column.header
+                )}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
