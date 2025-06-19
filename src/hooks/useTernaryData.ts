@@ -14,21 +14,23 @@ export const useTernaryData = () => {
   return useQuery<TernaryDataItem[], Error>({
     queryKey: ['ternaryData'],
     queryFn: async () => {
-      console.log('[DEBUG] Step 0: Starting fetch in useTernaryData...');
+      console.log('[DEBUG] Step 0: Starting fetch in useTernaryData (DESCENDING SORT TEST)...');
       
       const { data, error } = await supabase
         .from('oewg_ngram_statistics')
         .select('ngram, count_A, count_G, count_BCDE')
-        .limit(5000);
+        // --- HYPOTHESIS TEST: Explicitly order by ngram in descending order. ---
+        .order('ngram', { ascending: false })
+        .limit(1000); // We keep the limit for a controlled test.
 
       // --- DIAGNOSTIC LOG #1: Inspect the raw response from Supabase ---
       console.log('[DEBUG] Step 1: Raw Supabase Response Received');
       console.log(`[DEBUG]   - Error object:`, error);
       console.log(`[DEBUG]   - Data object received:`, data);
       console.log(`[DEBUG]   - Number of rows received: ${data?.length}`);
-      // Let's inspect the last item to see if it's still an 'A' word
+      // Let's inspect the FIRST item now, which should be a 'Z' or 'Y' word.
       if (data && data.length > 0) {
-        console.log(`[DEBUG]   - Last item ngram: "${data[data.length - 1].ngram}"`);
+        console.log(`[DEBUG]   - First item ngram: "${data[0].ngram}"`);
       }
       // --- End of Diagnostic Log #1 ---
 
@@ -37,7 +39,6 @@ export const useTernaryData = () => {
         throw new Error(error.message);
       }
       
-      // It's possible for `data` to be null even without an error.
       if (!data) {
         console.warn("[DEBUG] Data from Supabase is null or undefined, returning empty array.");
         return [];
