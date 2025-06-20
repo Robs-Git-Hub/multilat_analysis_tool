@@ -70,9 +70,17 @@ const CountryAnalysisPage = () => {
       font: { color: '#1a1d1d' },
       ternary: isMobile ? mobileTernaryConfig : desktopTernaryConfig,
       height: isMobile ? 450 : 750,
-      margin: isMobile ? { l: 40, r: 40, b: 40, t: 40 } : { l: 50, r: 50, b: 80, t: 80 },
+      margin: isMobile ? { l: 40, r: 40, b: 150, t: 40 } : { l: 50, r: 50, b: 80, t: 80 },
       showlegend: true,
-      legend: { yanchor: 'top', y: 1, xanchor: 'left', x: 0.01 },
+      legend: isMobile
+        ? {
+            orientation: 'h',
+            y: -0.2,
+            yanchor: 'top',
+            x: 0.5,
+            xanchor: 'center',
+          }
+        : { yanchor: 'top', y: 1, xanchor: 'left', x: 0.01 },
     };
   }, [isMobile]);
 
@@ -186,32 +194,35 @@ const CountryAnalysisPage = () => {
   };
 
   return (
-    <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Country Analysis</h1>
         
         <Card>
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-start gap-x-6 gap-y-4">
-            <div className="flex-grow space-y-2 min-w-[250px] w-full sm:w-auto">
-                <Label htmlFor="country-filter">Filter by Country</Label>
-                <MultiSelectCombobox
-                  options={countryOptions}
-                  value={selectedCountries}
-                  onChange={setSelectedCountries}
-                  placeholder="Select countries..."
-                  className="sm:w-[400px]"
-                />
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-x-8 gap-y-4">
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="country-filter" className="whitespace-nowrap shrink-0">Filter by Country</Label>
+              <MultiSelectCombobox
+                id="country-filter"
+                options={countryOptions}
+                value={selectedCountries}
+                onChange={setSelectedCountries}
+                placeholder="Select countries..."
+                className="w-full sm:w-[320px]"
+              />
             </div>
 
-            <div className="flex-grow space-y-2 min-w-[200px]">
-              <Label htmlFor="amplification-power">Amplification Power ({amplificationPower.toFixed(1)})</Label>
-              <Slider id="amplification-power" min={1} max={3} step={0.1} value={[amplificationPower]} onValueChange={([val]) => setAmplificationPower(val)} />
+            <div className="flex items-center gap-3">
+              <Label htmlFor="amplification-power" className="whitespace-nowrap">Amplification Power ({amplificationPower.toFixed(1)})</Label>
+              <Slider id="amplification-power" min={1} max={3} step={0.1} value={[amplificationPower]} onValueChange={([val]) => setAmplificationPower(val)} className="w-[150px]" />
             </div>
 
-            <div className="flex items-center space-x-2 self-end pb-2">
+            {/* FIX: Removed sm:ml-auto to allow natural flow */}
+            <div className="flex items-center gap-2">
               <Checkbox id="show-labels" checked={showLabels} onCheckedChange={(checked) => setShowLabels(Boolean(checked))} />
-              <Label htmlFor="show-labels">Show Labels</Label>
+              <Label htmlFor="show-labels" className="whitespace-nowrap">Show Labels</Label>
             </div>
+
           </CardContent>
         </Card>
 

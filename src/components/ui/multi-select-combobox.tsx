@@ -27,6 +27,7 @@ export interface ComboboxOption {
 }
 
 interface MultiSelectComboboxProps {
+  id?: string; // ADDED: Allows an ID to be passed for accessibility
   options: ComboboxOption[];
   value: string[];
   onChange: (value: string[]) => void;
@@ -35,6 +36,7 @@ interface MultiSelectComboboxProps {
 }
 
 export function MultiSelectCombobox({
+  id, // ADDED: Destructure the id from props
   options,
   value,
   onChange,
@@ -58,6 +60,7 @@ export function MultiSelectCombobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id} // ADDED: Apply the id to the button for the label to target
           variant="outline"
           role="combobox"
           aria-expanded={open}
