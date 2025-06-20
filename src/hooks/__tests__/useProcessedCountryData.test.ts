@@ -25,7 +25,6 @@ const mockCountryInfo = [
 describe('useProcessedCountryData', () => {
   it('should return null when raw data is loading', () => {
     // Arrange: Mock the dependency hook to be in a loading state.
-    // FIX: Use `data: undefined` and cast the mock object to the correct type.
     const mockLoadingResult = {
       data: undefined,
       isLoading: true,
@@ -44,7 +43,6 @@ describe('useProcessedCountryData', () => {
 
   it('should correctly process raw data into final centroid data', async () => {
     // Arrange: Mock the dependency hook to return our controlled dataset.
-    // FIX: Cast the mock object to the correct type.
     const mockSuccessResult = {
       data: {
         ngramStats: mockNgramStats,
@@ -66,10 +64,14 @@ describe('useProcessedCountryData', () => {
       expect(result.current.data).not.toBeNull();
     });
 
+    // *** FIX: Check the new data structure ***
     const processedData = result.current.data;
-    expect(processedData).toHaveLength(1);
+    expect(processedData).toBeTypeOf('object'); // It's an object now
+    expect(processedData?.countryCentroids).toHaveLength(1); // Check length of the country array
+    expect(processedData?.groupCentroids).toHaveLength(3); // Check that group centroids are created
 
-    const albData = processedData![0];
+    // *** FIX: Access the data from the correct property ***
+    const albData = processedData!.countryCentroids[0];
     expect(albData.centroid_group_name).toBe('ALB');
     expect(albData.P_US_centroid).toBeCloseTo(0.7024933);
     expect(albData.P_Russia_centroid).toBeCloseTo(0.1612863);

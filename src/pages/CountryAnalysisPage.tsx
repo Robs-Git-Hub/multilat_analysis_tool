@@ -2,7 +2,7 @@
 // src/pages/CountryAnalysisPage.tsx
 "use client";
 
-import { useState, useMemo } from 'react'; // FIX: Added useMemo to the import list
+import { useState, useMemo } from 'react';
 import { useProcessedCountryData } from '@/hooks/useProcessedCountryData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,8 +18,8 @@ const CountryAnalysisPage = () => {
   const [amplificationPower, setAmplificationPower] = useState(2.0);
   const [showLabels, setShowLabels] = useState(true);
 
-  // The page now uses our clean, dedicated processing hook.
-  const { data: processedCentroidData, isLoading, isError, error } = useProcessedCountryData(amplificationPower);
+  // The hook now returns an object: { groupCentroids, countryCentroids }
+  const { data: processedData, isLoading, isError, error } = useProcessedCountryData(amplificationPower);
 
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
@@ -47,11 +47,13 @@ const CountryAnalysisPage = () => {
   }, [isMobile]);
 
   const plotData = useMemo((): Data[] => {
-    if (!processedCentroidData) return [];
+    // Check for the parent object now, not just the array
+    if (!processedData?.countryCentroids) return [];
 
     const traces: Record<string, Partial<Data> & { x: number[], y: number[], z: number[], text: string[], customdata: any[] }> = {};
 
-    for (const centroid of processedCentroidData) {
+    // *** FIX: Loop over processedData.countryCentroids instead of processedData ***
+    for (const centroid of processedData.countryCentroids) {
       const group = centroid.group || 'Other';
       if (!traces[group]) {
         traces[group] = {
@@ -80,12 +82,13 @@ const CountryAnalysisPage = () => {
                      "Community: %{customdata.group}<br>" +
                      "<extra></extra>",
     }));
-  }, [processedCentroidData, showLabels]);
+  }, [processedData, showLabels]);
 
   const renderContent = () => {
     if (isLoading) return <Skeleton className="w-full h-[800px]" />;
     if (isError) return <div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> {error?.message}</p></div>;
-    if (!processedCentroidData) return <p>No data available to display.</p>;
+    // Also check for processedData here
+    if (!processedData) return <p>No data available to display.</p>;
 
     return (
       <Card>
