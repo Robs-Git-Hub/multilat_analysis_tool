@@ -76,7 +76,7 @@ export const TEXT_LABEL_STYLE = {
 // Defines the order of axes, replicating axis_mapping from legacy/app.py
 // a = top, b = right, c = left
 export const TERNARY_AXES_CONFIG = {
-  a: { prop: 'P_Middle_centroid', title: 'Middle-ground<br>Share' },
+  a: { prop: 'P_Middle_centroid', title: 'Middle-ground Share<br>' },
   b: { prop: 'P_Russia_centroid', title: 'Russia-like-voting<br>Share' },
   c: { prop: 'P_US_centroid', title: 'US-like-voting<br>Share' },
 };
