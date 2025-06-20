@@ -3,23 +3,24 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { UseQueryResult } from '@tanstack/react-query';
-// FIX: Corrected the relative import path to go up one directory level.
-import { useCountryAnalysisData, type CountryAnalysisData } from '../useCountryAnalysisData';
-import { useProcessedCountryData } from '../useProcessedCountryData';
+// FIX: Using robust path aliases for imports.
+import { useCountryAnalysisData, type CountryAnalysisData, type CountryInfo, type CountryNgramWeight, type NgramStats } from '@/hooks';
+import { useProcessedCountryData } from '@/hooks';
 
 // Mock the raw data fetching hook.
-vi.mock('../useCountryAnalysisData');
+// FIX: Mocking the aliased path for consistency.
+vi.mock('@/hooks/useCountryAnalysisData');
 
 // --- Mock Data ---
-const mockNgramStats = [
+const mockNgramStats: NgramStats[] = [
   { ngram_id: 1, ngram: 'test ngram 1', count_A: 100, count_G: 50, count_BCDE: 20 },
   { ngram_id: 2, ngram: 'test ngram 2', count_A: 10, count_G: 80, count_BCDE: 40 },
 ];
-const mockCountryWeights = [
+const mockCountryWeights: CountryNgramWeight[] = [
   { country_speaker: 'ALB', ngram_id: 1, count_sentences_for_ngram_by_country: 400 },
   { country_speaker: 'ALB', ngram_id: 2, count_sentences_for_ngram_by_country: 34 },
 ];
-const mockCountryInfo = [
+const mockCountryInfo: CountryInfo[] = [
   { id: 'ALB', merge_name: 'ALB Albania', cpm_community_after_10_CPM_0_53: 'A' },
 ];
 
@@ -61,6 +62,11 @@ describe('useProcessedCountryData', () => {
 
     const processedData = result.current.data;
     expect(processedData).toBeTypeOf('object');
+    // FIX: Updated expectations based on the new logic which provides the full country list
+    expect(processedData?.allCountries).toHaveLength(1);
+    expect(processedData?.allCountries[0].name).toBe('ALB Albania');
+    expect(processedData?.allCountries[0].totalMentions).toBe(434);
+
     expect(processedData?.countryCentroids).toHaveLength(1);
     expect(processedData?.groupCentroids).toHaveLength(3);
 

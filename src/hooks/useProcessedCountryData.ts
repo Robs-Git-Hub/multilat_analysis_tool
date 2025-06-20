@@ -1,7 +1,7 @@
 
 // src/hooks/useProcessedCountryData.ts
 import { useMemo } from 'react';
-import { useCountryAnalysisData, CountryAnalysisData } from './useCountryAnalysisData';
+import { useCountryAnalysisData, CountryInfo, CountryNgramWeight, NgramStats } from './useCountryAnalysisData';
 import { calculateBaseTernaryAttributes, RawCountItem } from '@/utils/ternaryDataProcessing';
 import {
   calculateAmplifiedCoordinates,
@@ -15,29 +15,62 @@ import {
 } from '@/utils/ternaryCalculations';
 import { MAIN_GROUP_CENTROID_DEFINITIONS, COMMUNITY_COLOR_MAP } from '@/config/countryChartConfig';
 
-// FIX: Exported the types for use in other modules.
 export interface FinalCountryCentroid extends Centroid {
   group?: string;
   marker_color_final: string;
   country_name: string;
 }
 
+export interface CountryListItem {
+  id: string;
+  name: string;
+  totalMentions: number;
+}
+
 export interface ProcessedCountryData {
   groupCentroids: Centroid[];
   countryCentroids: FinalCountryCentroid[];
+  allCountries: CountryListItem[];
 }
 
 /**
  * @file useProcessedCountryData.ts
  * @summary Encapsulates the complete data processing pipeline for the Country Analysis page.
  */
-export const useProcessedCountryData = (amplificationPower: number) => {
+export const useProcessedCountryData = (
+  amplificationPower: number,
+  selectedCountryIds: string[] = []
+) => {
   const { data: rawData, isLoading, isError, error } = useCountryAnalysisData();
 
   const processedData = useMemo((): ProcessedCountryData | null => {
     if (!rawData) return null;
 
-    const compliantNgramStats: RawCountItem[] = rawData.ngramStats.map((stat: CountryAnalysisData['ngramStats'][0]) => ({
+    // --- Step 1: Prepare the list of all countries for the dropdown UI ---
+    const mentionsPerCountry = rawData.countryWeights.reduce((acc: Record<string, number>, weight: CountryNgramWeight) => {
+      const countryId = weight.country_speaker;
+      const count = weight.count_sentences_for_ngram_by_country;
+      acc[countryId] = (acc[countryId] || 0) + count;
+      return acc;
+    }, {});
+
+    const allCountries: CountryListItem[] = rawData.countryInfo
+      .map((ci: CountryInfo) => ({
+        id: ci.id,
+        name: ci.merge_name,
+        // FIX: This now correctly uses the 'mentionsPerCountry' map and does NOT access 'ci.totalMentions'.
+        totalMentions: mentionsPerCountry[ci.id] || 0,
+      }))
+      .sort((a: CountryListItem, b: CountryListItem) => a.name.localeCompare(b.name));
+    
+    // --- Step 2: Filter country weights based on selections ---
+    const filteredCountryWeights =
+      selectedCountryIds.length > 0
+        ? rawData.countryWeights.filter((w: CountryNgramWeight) => selectedCountryIds.includes(w.speaker))
+        : rawData.countryWeights;
+
+    // --- Step 3: Proceed with all chart calculations using the filtered data ---
+    const compliantNgramStats: RawCountItem[] = rawData.ngramStats.map((stat: NgramStats) => ({
       ...stat,
       id: stat.ngram_id,
     }));
@@ -62,14 +95,14 @@ export const useProcessedCountryData = (amplificationPower: number) => {
     }));
     const groupCentroids = calculateWeightedGroupCentroids(amplifiedItemsForGroupCentroids, MAIN_GROUP_CENTROID_DEFINITIONS);
 
-    const mappedWeights: CategoricalWeight[] = rawData.countryWeights.map((w: CountryAnalysisData['countryWeights'][0]) => ({
+    const mappedWeights: CategoricalWeight[] = filteredCountryWeights.map((w: CountryNgramWeight) => ({
       item_id: w.ngram_id,
       category_id: w.country_speaker,
       weight: w.count_sentences_for_ngram_by_country,
     }));
     const countryCentroids = calculateCategoricalCentroids(amplifiedNgrams, mappedWeights, 'id', 'category_id', 'weight');
 
-    const mappedCountryInfo: (CategoryInfo & { name: string })[] = rawData.countryInfo.map((ci: CountryAnalysisData['countryInfo'][0]) => ({
+    const mappedCountryInfo: (CategoryInfo & { name: string })[] = rawData.countryInfo.map((ci: CountryInfo) => ({
         id: ci.id,
         group: ci.cpm_community_after_10_CPM_0_53,
         name: ci.merge_name,
@@ -83,9 +116,9 @@ export const useProcessedCountryData = (amplificationPower: number) => {
     }));
     finalCountryCentroids.sort((a, b) => a.country_name.localeCompare(b.country_name));
     
-    return { groupCentroids, countryCentroids: finalCountryCentroids };
+    return { groupCentroids, countryCentroids: finalCountryCentroids, allCountries };
 
-  }, [rawData, amplificationPower]);
+  }, [rawData, amplificationPower, selectedCountryIds]);
 
   return { data: processedData, isLoading, isError, error };
 };

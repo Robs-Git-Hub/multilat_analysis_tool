@@ -7,4 +7,4 @@ export { useConfigurableTernaryData } from './useConfigurableTernaryData';
 export { useDataConnectionTest } from './useDataConnectionTest';
 export { useKeywordDetails } from './useKeywordDetails';
 export { useCountryAnalysisData } from './useCountryAnalysisData';
-export { useProcessedCountryData } from './useProcessedCountryData'; // <-- ADD THIS LINE
+export { useProcessedCountryData } from './useProcessedCountryData';

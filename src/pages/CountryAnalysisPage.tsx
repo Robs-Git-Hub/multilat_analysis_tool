@@ -22,7 +22,7 @@
  */
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react'; // ADDED: useEffect
 import type { Data, Layout } from 'plotly.js';
 
 import { useProcessedCountryData, FinalCountryCentroid } from '@/hooks/useProcessedCountryData';
@@ -46,8 +46,21 @@ const CountryAnalysisPage = () => {
   const isMobile = useIsMobile();
   const [amplificationPower, setAmplificationPower] = useState(2.0);
   const [showLabels, setShowLabels] = useState(true);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]); // ADDED: State for the filter
 
-  const { data: processedData, isLoading, isError, error } = useProcessedCountryData(amplificationPower);
+  // UPDATED: Pass selection state to the data hook
+  const { data: processedData, isLoading, isError, error } = useProcessedCountryData(amplificationPower, selectedCountries);
+
+  // --- VERIFICATION STEP ---
+  // This temporary log will help us confirm our data hooks are working correctly
+  // before we build the UI that depends on this data.
+  useEffect(() => {
+    if (processedData?.allCountries) {
+      console.log("Verification Step: The 'allCountries' array is ready for the dropdown. Please check that each object has 'id', 'name', and 'totalMentions'.");
+      console.log(processedData.allCountries);
+    }
+  }, [processedData]);
+  // --- END VERIFICATION STEP ---
 
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
@@ -83,7 +96,6 @@ const CountryAnalysisPage = () => {
 
     // --- Trace 1: Main Group Centroids ---
     if (groupCentroids.length > 0) {
-      // FIX: Cast the entire trace object to `any` to resolve specific property errors.
       traces.push({
         type: 'scatterternary',
         mode: 'markers+text',
@@ -110,7 +122,6 @@ const CountryAnalysisPage = () => {
 
     // --- Helper function to create country traces ---
     const createCountryTrace = (countries: FinalCountryCentroid[], name: string, hoverSuffix = ""): Data => {
-      // FIX: Cast the entire trace object to `any` to resolve specific property errors.
       return {
         type: 'scatterternary',
         mode: traceMode,
