@@ -6,4 +6,5 @@ export { useCommentSearch } from './useCommentSearch';
 export { useConfigurableTernaryData } from './useConfigurableTernaryData';
 export { useDataConnectionTest } from './useDataConnectionTest';
 export { useKeywordDetails } from './useKeywordDetails';
-export { useCountryAnalysisData } from './useCountryAnalysisData'; // <-- ADDED THIS LINE
+export { useCountryAnalysisData } from './useCountryAnalysisData';
+export { useProcessedCountryData } from './useProcessedCountryData'; // <-- ADD THIS LINE
