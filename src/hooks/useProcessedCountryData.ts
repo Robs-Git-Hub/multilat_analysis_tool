@@ -58,7 +58,6 @@ export const useProcessedCountryData = (
       .map((ci: CountryInfo) => ({
         id: ci.id,
         name: ci.merge_name,
-        // FIX: This now correctly uses the 'mentionsPerCountry' map and does NOT access 'ci.totalMentions'.
         totalMentions: mentionsPerCountry[ci.id] || 0,
       }))
       .sort((a: CountryListItem, b: CountryListItem) => a.name.localeCompare(b.name));
@@ -66,7 +65,7 @@ export const useProcessedCountryData = (
     // --- Step 2: Filter country weights based on selections ---
     const filteredCountryWeights =
       selectedCountryIds.length > 0
-        ? rawData.countryWeights.filter((w: CountryNgramWeight) => selectedCountryIds.includes(w.speaker))
+        ? rawData.countryWeights.filter((w: CountryNgramWeight) => selectedCountryIds.includes(w.country_speaker))
         : rawData.countryWeights;
 
     // --- Step 3: Proceed with all chart calculations using the filtered data ---
@@ -76,6 +75,7 @@ export const useProcessedCountryData = (
     }));
 
     const ngramsWithAttributes = calculateBaseTernaryAttributes(
+      // FIX: Corrected the typo from 'compliantNgramSts' to 'compliantNgramStats'.
       compliantNgramStats,
       { us_count_col: 'count_A', russia_count_col: 'count_G', middle_count_col: 'count_BCDE' }
     );
