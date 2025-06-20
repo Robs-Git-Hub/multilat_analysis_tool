@@ -22,7 +22,7 @@
  */
 "use client";
 
-import { useState, useMemo, useEffect } from 'react'; // ADDED: useEffect
+import { useState, useMemo } from 'react';
 import type { Data, Layout } from 'plotly.js';
 
 import { useProcessedCountryData, FinalCountryCentroid } from '@/hooks/useProcessedCountryData';
@@ -40,27 +40,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
+import { MultiSelectCombobox } from '@/components/ui/multi-select-combobox';
 
 
 const CountryAnalysisPage = () => {
   const isMobile = useIsMobile();
   const [amplificationPower, setAmplificationPower] = useState(2.0);
   const [showLabels, setShowLabels] = useState(true);
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]); // ADDED: State for the filter
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
-  // UPDATED: Pass selection state to the data hook
   const { data: processedData, isLoading, isError, error } = useProcessedCountryData(amplificationPower, selectedCountries);
-
-  // --- VERIFICATION STEP ---
-  // This temporary log will help us confirm our data hooks are working correctly
-  // before we build the UI that depends on this data.
-  useEffect(() => {
-    if (processedData?.allCountries) {
-      console.log("Verification Step: The 'allCountries' array is ready for the dropdown. Please check that each object has 'id', 'name', and 'totalMentions'.");
-      console.log(processedData.allCountries);
-    }
-  }, [processedData]);
-  // --- END VERIFICATION STEP ---
 
   const plotLayout = useMemo((): Partial<Layout> => {
     const desktopTernaryConfig = {
@@ -170,6 +159,15 @@ const CountryAnalysisPage = () => {
     return traces;
   }, [processedData, showLabels]);
 
+  const countryOptions = useMemo(() => {
+    if (!processedData?.allCountries) return [];
+    return processedData.allCountries.map(country => ({
+      value: country.id,
+      label: country.name,
+      disabled: country.totalMentions === 0,
+    }));
+  }, [processedData?.allCountries]);
+
   const renderContent = () => {
     if (isLoading) return <Skeleton className="w-full h-[800px]" />;
     if (isError) return <div className="text-red-600 bg-red-50 p-4 rounded-md"><p><strong>Error:</strong> {error?.message}</p></div>;
@@ -193,12 +191,24 @@ const CountryAnalysisPage = () => {
         <h1 className="text-2xl font-semibold text-gray-900">Country Analysis</h1>
         
         <Card>
-          <CardContent className="p-4 flex flex-col sm:flex-row gap-6 items-center">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-start gap-x-6 gap-y-4">
             <div className="flex-grow space-y-2 min-w-[250px] w-full sm:w-auto">
+                <Label htmlFor="country-filter">Filter by Country</Label>
+                <MultiSelectCombobox
+                  options={countryOptions}
+                  value={selectedCountries}
+                  onChange={setSelectedCountries}
+                  placeholder="Select countries..."
+                  className="sm:w-[400px]"
+                />
+            </div>
+
+            <div className="flex-grow space-y-2 min-w-[200px]">
               <Label htmlFor="amplification-power">Amplification Power ({amplificationPower.toFixed(1)})</Label>
               <Slider id="amplification-power" min={1} max={3} step={0.1} value={[amplificationPower]} onValueChange={([val]) => setAmplificationPower(val)} />
             </div>
-            <div className="flex items-center space-x-2 pt-6">
+
+            <div className="flex items-center space-x-2 self-end pb-2">
               <Checkbox id="show-labels" checked={showLabels} onCheckedChange={(checked) => setShowLabels(Boolean(checked))} />
               <Label htmlFor="show-labels">Show Labels</Label>
             </div>
