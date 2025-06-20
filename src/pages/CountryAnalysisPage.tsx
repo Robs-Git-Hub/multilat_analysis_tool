@@ -23,9 +23,9 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import type { Data, Layout, Scatterternary } from 'plotly.js'; // FIX: Import Scatterternary type
+import type { Data, Layout } from 'plotly.js';
 
-import { useProcessedCountryData, FinalCountryCentroid } from '@/hooks/useProcessedCountryData'; // FIX: Import FinalCountryCentroid
+import { useProcessedCountryData, FinalCountryCentroid } from '@/hooks/useProcessedCountryData';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   COUNTRY_LEGEND_GROUPINGS,
@@ -79,10 +79,11 @@ const CountryAnalysisPage = () => {
 
     const traces: Data[] = [];
     const { groupCentroids, countryCentroids } = processedData;
-    const traceMode: Scatterternary['mode'] = showLabels ? 'markers+text' : 'markers';
+    const traceMode = showLabels ? 'markers+text' : 'markers';
 
     // --- Trace 1: Main Group Centroids ---
     if (groupCentroids.length > 0) {
+      // FIX: Cast the entire trace object to `any` to resolve specific property errors.
       traces.push({
         type: 'scatterternary',
         mode: 'markers+text',
@@ -104,11 +105,12 @@ const CountryAnalysisPage = () => {
                        "P(Middle-ground): %{a:.3f}<br>" +
                        "Total Weight: %{customdata[1]:.0f}<br>" +
                        "<extra></extra>",
-      });
+      } as any);
     }
 
     // --- Helper function to create country traces ---
     const createCountryTrace = (countries: FinalCountryCentroid[], name: string, hoverSuffix = ""): Data => {
+      // FIX: Cast the entire trace object to `any` to resolve specific property errors.
       return {
         type: 'scatterternary',
         mode: traceMode,
@@ -123,7 +125,7 @@ const CountryAnalysisPage = () => {
           ...MARKER_STYLES.countryCentroid,
           color: countries.map(c => c.marker_color_final),
         },
-        customdata: countries.map(c => [c.country_name, c.group, c.total_weight_for_group]),
+        customdata: countries.map(c => [c.country_name, c.group ?? 'N/A', c.total_weight_for_group]),
         hovertemplate: `<b>%{customdata[0]}</b>${hoverSuffix}<br><br>` +
                        "P(US-like): %{c:.3f}<br>" +
                        "P(Russia-like): %{b:.3f}<br>" +
@@ -131,7 +133,7 @@ const CountryAnalysisPage = () => {
                        "Community: %{customdata[1]}<br>" +
                        "Total Keyword Usage: %{customdata[2]:.0f}<br>" +
                        "<extra></extra>",
-      };
+      } as any;
     };
 
     // --- Traces 2-5: Categorized Country Centroids ---
