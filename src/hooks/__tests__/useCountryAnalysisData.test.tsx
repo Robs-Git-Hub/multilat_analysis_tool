@@ -46,6 +46,9 @@ describe('useCountryAnalysisData', () => {
 
   it('should fetch from three sources and return combined data structure', async () => {
     // Arrange: Provide mock responses for this specific test.
+    // FIX: Make handlers more robust by matching only the base path. This prevents
+    // the test from breaking when query parameters (like `order` or `select`) are added
+    // to the application code's fetch request.
     server.use(
       http.get('https://*.supabase.co/rest/v1/analysis_ngram_community_stats', () => HttpResponse.json(mockNgramStats)),
       http.get('https://*.supabase.co/rest/v1/vw_country_ngram_sentence_counts', () => HttpResponse.json(mockCountryWeights)),
