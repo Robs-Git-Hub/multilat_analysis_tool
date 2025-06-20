@@ -47,9 +47,16 @@ export const useCountryAnalysisData = () => {
 
         while (keepFetching) {
           const { from, to } = { from: page * PAGE_SIZE, to: (page + 1) * PAGE_SIZE - 1 };
-          // CORRECTED: Use `as any` to bypass the strict overload check. This is a safe
-          // and targeted way to resolve the type error without disabling checks elsewhere.
-          const { data, error } = await supabase.from(table as any).select(columns).range(from, to);
+          
+          // FIX: Add an .order() clause to ensure stable pagination.
+          // Without this, the database provides no guarantee on the order of rows,
+          // causing inconsistent data between fetches and leading to flickering UI.
+          // We order by 'ngram_id' as it's a stable, unique identifier.
+          const { data, error } = await supabase
+            .from(table as any)
+            .select(columns)
+            .order('ngram_id', { ascending: true }) // <-- CRITICAL FIX
+            .range(from, to);
 
           if (error) {
             console.error(`Error fetching paginated data from ${table}:`, error);
@@ -72,6 +79,8 @@ export const useCountryAnalysisData = () => {
 
       const [ngramStats, countryWeights, countryInfo] = await Promise.all([
         fetchAll('analysis_ngram_community_stats', 'ngram, count_A, count_G, count_BCDE, ngram_id'),
+        // Note: The country weights table is small, so pagination isn't strictly necessary here,
+        // but the fetchAll utility handles it safely anyway.
         fetchAll('vw_country_ngram_sentence_counts', 'country_speaker, ngram_id, count_sentences_for_ngram_by_country'),
         supabase.from('country').select('id, merge_name, cpm_community_after_10_CPM_0_53').then(res => {
           if (res.error) throw new Error(res.error.message);
@@ -85,5 +94,8 @@ export const useCountryAnalysisData = () => {
         countryInfo: countryInfo as CountryInfo[],
       };
     },
+    // Add staleTime to prevent overly aggressive refetching during development.
+    // This means data is considered fresh for 1 minute.
+    staleTime: 60 * 1000,
   });
 };
