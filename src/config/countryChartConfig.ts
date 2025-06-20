@@ -69,7 +69,7 @@ export const MARKER_STYLES = {
 
 // Replicates text label configuration from legacy/app.py
 export const TEXT_LABEL_STYLE = {
-  font: { size: 8 },
+  font: { size: 10 },
   position: "middle right",
 };
 
