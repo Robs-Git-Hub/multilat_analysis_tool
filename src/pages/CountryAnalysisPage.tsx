@@ -2,7 +2,7 @@
 // src/pages/CountryAnalysisPage.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react'; // FIX: Added useMemo to the import list
 import { useProcessedCountryData } from '@/hooks/useProcessedCountryData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
